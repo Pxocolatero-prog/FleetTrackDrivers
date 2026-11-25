@@ -1,0 +1,2661 @@
+```html
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#070d19" />
+  <title>FleetTrackDrivers</title>
+  <style>
+    /* =====================================================================
+       DESIGN TOKENS & SELF-CONTAINED STYLING (ZERO EXTERNAL DEPENDENCIES)
+       ===================================================================== */
+    :root {
+      --bg-dark: #070d19;
+      --surface-glass: rgba(15, 23, 42, 0.86);
+      --surface-card-dark: rgba(11, 19, 36, 0.82);
+      --surface-list: rgba(255, 255, 255, 0.98);
+      --ink-light: #f8fafc;
+      --ink-muted: #94a3b8;
+      --ink-dark: #0f172a;
+      --line-soft: rgba(148, 163, 184, 0.22);
+      --line-strong: rgba(148, 163, 184, 0.45);
+      --accent-green: #16a34a;
+      --accent-green-bright: #22c55e;
+      --accent-blue: #2563eb;
+      --accent-blue-bright: #3b82f6;
+      --accent-amber: #d97706;
+      --accent-amber-bright: #f59e0b;
+      --accent-red: #dc2626;
+      --accent-red-bright: #ef4444;
+      --radius-sm: 8px;
+      --radius-md: 12px;
+      --radius-lg: 18px;
+      --radius-xl: 22px;
+      --shadow-main: 0 16px 38px -10px rgba(0, 0, 0, 0.7);
+      --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+    }
+
+    *, *::before, *::after {
+      box-sizing: border-box;
+    }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      min-height: 100%;
+      font-family: var(--font-sans);
+      background-color: var(--bg-dark);
+      color: var(--ink-light);
+      overflow-x: hidden;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    /* =====================================================================
+       HISTORICAL SAURER OCHSNER M-72515 DARK GLASS BACKGROUND
+       ===================================================================== */
+    .saurer-bg-photo {
+      position: fixed;
+      inset: 0;
+      z-index: -2;
+      background-size: cover;
+      background-position: center 40%;
+      background-repeat: no-repeat;
+      transform: scale(1.02);
+      filter: contrast(1.06) saturate(1.05);
+    }
+
+    .saurer-bg-scrim {
+      position: fixed;
+      inset: 0;
+      z-index: -1;
+      background:
+        radial-gradient(circle at 86% 14%, rgba(37, 99, 235, 0.18), transparent 44%),
+        radial-gradient(circle at 14% 88%, rgba(22, 163, 74, 0.15), transparent 46%),
+        linear-gradient(180deg, rgba(7, 13, 25, 0.82) 0%, rgba(10, 18, 34, 0.90) 52%, rgba(7, 13, 25, 0.97) 100%);
+      backdrop-filter: blur(4px);
+    }
+
+    .glass-box {
+      background: var(--surface-glass);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border: 1px solid var(--line-soft);
+      box-shadow: var(--shadow-main);
+    }
+
+    .wrap {
+      width: 100%;
+      max-width: 1320px;
+      margin: 0 auto;
+      padding-left: 14px;
+      padding-right: 14px;
+    }
+
+    /* =====================================================================
+       TOP BAR & CONDITIONED FRONT SAURER M-72515 BADGE
+       ===================================================================== */
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 40;
+      border-bottom: 1px solid var(--line-soft);
+    }
+
+    .topbar-inner {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding-top: 10px;
+      padding-bottom: 10px;
+    }
+
+    .brand-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .emblem-frame {
+      position: relative;
+      width: 58px;
+      height: 58px;
+      border-radius: 14px;
+      overflow: hidden;
+      border: 2px solid rgba(226, 232, 240, 0.65);
+      background: #0f172a;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.55);
+      flex-shrink: 0;
+    }
+
+    .emblem-frame img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: center 43%;
+      filter: contrast(1.15) brightness(1.06) saturate(1.08);
+      display: block;
+    }
+
+    .emblem-plate {
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(2, 6, 23, 0.88);
+      color: #f8fafc;
+      font-family: var(--font-mono);
+      font-size: 0.56rem;
+      font-weight: 800;
+      text-align: center;
+      padding: 1px 0;
+      letter-spacing: 0.04em;
+    }
+
+    .app-name {
+      margin: 0;
+      font-size: 1.25rem;
+      font-weight: 900;
+      letter-spacing: -0.02em;
+      color: #ffffff;
+    }
+
+    .status-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 3px;
+      flex-wrap: wrap;
+    }
+
+    .sync-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 2px 9px;
+      border-radius: 999px;
+      font-size: 0.7rem;
+      font-weight: 800;
+      background: rgba(30, 41, 59, 0.92);
+      color: #cbd5e1;
+      border: 1px solid var(--line-soft);
+    }
+
+    .sync-pill.cloud-live {
+      background: rgba(20, 83, 45, 0.65);
+      color: #86efac;
+      border-color: rgba(74, 222, 128, 0.55);
+    }
+
+    .sync-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 999px;
+      background: #38bdf8;
+      display: inline-block;
+    }
+
+    .sync-pill.cloud-live .sync-dot {
+      background: #22c55e;
+      box-shadow: 0 0 8px #22c55e;
+    }
+
+    .mode-pill {
+      display: inline-flex;
+      align-items: center;
+      padding: 2px 9px;
+      border-radius: 999px;
+      font-size: 0.7rem;
+      font-weight: 800;
+      background: rgba(30, 41, 59, 0.92);
+      color: #cbd5e1;
+      border: 1px solid var(--line-soft);
+    }
+
+    .mode-pill.admin-on {
+      background: rgba(245, 158, 11, 0.24);
+      color: #fde68a;
+      border-color: rgba(251, 191, 36, 0.62);
+    }
+
+    .clock-text {
+      font-size: 0.72rem;
+      font-weight: 700;
+      color: #93c5fd;
+    }
+
+    .header-btns {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 8px;
+    }
+
+    /* =====================================================================
+       BUTTONS
+       ===================================================================== */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 9px 13px;
+      border-radius: var(--radius-md);
+      font-size: 0.78rem;
+      font-weight: 800;
+      border: 1px solid transparent;
+      cursor: pointer;
+      color: #ffffff;
+      text-decoration: none;
+      transition: transform 0.12s ease, background-color 0.15s ease, border-color 0.15s ease;
+    }
+
+    .btn:active {
+      transform: scale(0.97);
+    }
+
+    .btn:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+    }
+
+    .btn-green {
+      background: linear-gradient(135deg, var(--accent-green), #059669);
+      border-color: rgba(134, 239, 172, 0.45);
+    }
+
+    .btn-green:hover:not(:disabled) {
+      background: linear-gradient(135deg, var(--accent-green-bright), #10b981);
+    }
+
+    .btn-blue {
+      background: var(--accent-blue);
+      border-color: rgba(147, 197, 253, 0.45);
+    }
+
+    .btn-blue:hover:not(:disabled) {
+      background: var(--accent-blue-bright);
+    }
+
+    .btn-amber {
+      background: rgba(217, 119, 6, 0.28);
+      border-color: rgba(251, 191, 36, 0.6);
+      color: #fde68a;
+    }
+
+    .btn-amber:hover:not(:disabled) {
+      background: rgba(217, 119, 6, 0.45);
+      color: #ffffff;
+    }
+
+    .btn-red {
+      background: var(--accent-red);
+      border-color: rgba(252, 165, 165, 0.45);
+    }
+
+    .btn-red:hover:not(:disabled) {
+      background: var(--accent-red-bright);
+    }
+
+    .btn-dark {
+      background: rgba(30, 41, 59, 0.92);
+      border-color: var(--line-soft);
+      color: #f1f5f9;
+    }
+
+    .btn-dark:hover:not(:disabled) {
+      background: rgba(51, 65, 85, 0.96);
+    }
+
+    /* =====================================================================
+       ADMIN PANEL (UNLOCKED ONLY WITH PIN 0484)
+       ===================================================================== */
+    .admin-panel {
+      margin-top: 10px;
+      margin-bottom: 4px;
+      padding: 14px 16px;
+      border-radius: var(--radius-lg);
+      background: rgba(15, 23, 42, 0.92);
+      border: 1px solid rgba(251, 191, 36, 0.55);
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .admin-top-row {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .cloud-box {
+      padding: 12px 14px;
+      border-radius: var(--radius-md);
+      background: rgba(2, 6, 23, 0.82);
+      border: 1px solid rgba(96, 165, 250, 0.35);
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .cloud-form-row {
+      display: grid;
+      grid-template-columns: 1fr auto auto;
+      gap: 8px;
+      align-items: center;
+    }
+
+    @media (max-width: 720px) {
+      .cloud-form-row {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* =====================================================================
+       MAIN LAYOUT & UNIFIED SEARCH + CAROUSEL
+       ===================================================================== */
+    .main-stack {
+      padding-top: 18px;
+      padding-bottom: 48px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .search-panel {
+      border-radius: var(--radius-xl);
+      padding: 16px;
+    }
+
+    .search-row {
+      display: grid;
+      grid-template-columns: 1fr auto auto;
+      gap: 10px;
+      align-items: center;
+    }
+
+    @media (max-width: 780px) {
+      .search-row {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .search-shell {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+
+    .eu-badge {
+      position: absolute;
+      left: 8px;
+      width: 28px;
+      height: 36px;
+      border-radius: 5px;
+      background: #003399;
+      color: #ffffff;
+      font-family: var(--font-mono);
+      font-size: 0.6rem;
+      font-weight: 800;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      line-height: 1.05;
+      pointer-events: none;
+    }
+
+    .search-input {
+      width: 100%;
+      padding: 12px 40px 12px 46px;
+      border-radius: var(--radius-md);
+      border: 2px solid var(--line-strong);
+      background: rgba(2, 6, 23, 0.90);
+      color: #ffffff;
+      font-size: 0.94rem;
+      font-weight: 700;
+      outline: none;
+    }
+
+    .search-input:focus {
+      border-color: var(--accent-green-bright);
+      box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.22);
+    }
+
+    .search-clear {
+      position: absolute;
+      right: 10px;
+      width: 26px;
+      height: 26px;
+      border-radius: 999px;
+      border: none;
+      background: rgba(71, 85, 105, 0.85);
+      color: #ffffff;
+      font-weight: 800;
+      cursor: pointer;
+      display: none;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .search-clear.visible {
+      display: inline-flex;
+    }
+
+    .suggest-dropdown {
+      position: absolute;
+      top: calc(100% + 6px);
+      left: 0;
+      right: 0;
+      z-index: 55;
+      max-height: 320px;
+      overflow-y: auto;
+      border-radius: var(--radius-md);
+      background: #091122;
+      border: 1.5px solid var(--accent-green-bright);
+      box-shadow: 0 22px 48px rgba(0, 0, 0, 0.88);
+    }
+
+    .suggest-item {
+      width: 100%;
+      border: none;
+      border-bottom: 1px solid rgba(148, 163, 184, 0.14);
+      background: transparent;
+      color: #f8fafc;
+      padding: 10px 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      text-align: left;
+      cursor: pointer;
+    }
+
+    .suggest-item:hover,
+    .suggest-item.active {
+      background: rgba(34, 197, 94, 0.16);
+    }
+
+    .suggest-plate {
+      font-family: var(--font-mono);
+      font-weight: 800;
+      font-size: 0.9rem;
+      color: #86efac;
+      flex-shrink: 0;
+    }
+
+    .suggest-meta {
+      font-size: 0.78rem;
+      color: #cbd5e1;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .carousel-box {
+      margin-top: 12px;
+      padding: 12px;
+      border-radius: var(--radius-md);
+      background: rgba(2, 6, 23, 0.85);
+      border: 1px solid rgba(96, 165, 250, 0.55);
+    }
+
+    .carousel-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+
+    .carousel-rail {
+      display: flex;
+      gap: 10px;
+      overflow-x: auto;
+      scroll-behavior: smooth;
+      padding-bottom: 6px;
+    }
+
+    .carousel-card {
+      flex: 0 0 210px;
+      padding: 10px 12px;
+      border-radius: var(--radius-md);
+      background: rgba(15, 23, 42, 0.96);
+      border: 1px solid var(--line-soft);
+      color: #f8fafc;
+      text-align: left;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      transition: transform 0.14s ease, border-color 0.14s ease;
+    }
+
+    .carousel-card:hover {
+      transform: translateY(-2px);
+      border-color: var(--accent-blue-bright);
+    }
+
+    .carousel-card.selected {
+      border-color: var(--accent-green-bright);
+      background: rgba(20, 83, 45, 0.45);
+    }
+
+    /* =====================================================================
+       SMARTBCN QUICK STATUS BOXES (FleetKaputStatus & FleetWorkshopStatus)
+       ===================================================================== */
+    .smartbcn-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(295px, 1fr));
+      gap: 12px;
+    }
+
+    .smartbcn-card {
+      border-radius: var(--radius-lg);
+      padding: 14px 16px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .smartbcn-card.kaput {
+      background: rgba(127, 29, 29, 0.36);
+      border: 1px solid rgba(248, 113, 113, 0.55);
+    }
+
+    .smartbcn-card.workshop {
+      background: rgba(120, 53, 15, 0.36);
+      border: 1px solid rgba(251, 191, 36, 0.55);
+    }
+
+    .smartbcn-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .smartbcn-name {
+      font-size: 0.94rem;
+      font-weight: 900;
+      color: #ffffff;
+    }
+
+    .smartbcn-counter {
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      font-weight: 900;
+      padding: 3px 10px;
+      border-radius: 999px;
+      background: rgba(2, 6, 23, 0.82);
+      color: #ffffff;
+    }
+
+    .smartbcn-url {
+      font-family: var(--font-mono);
+      font-size: 0.68rem;
+      color: #cbd5e1;
+      word-break: break-all;
+    }
+
+    /* =====================================================================
+       ALWAYS-VISIBLE BOTTOM FLEET TABLE & MOBILE CARDS
+       ===================================================================== */
+    .list-header-bar {
+      border-radius: var(--radius-lg);
+      padding: 12px 16px;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .list-counter {
+      font-size: 0.88rem;
+      font-weight: 800;
+      color: #ffffff;
+    }
+
+    .fleet-table-box {
+      border-radius: var(--radius-xl);
+      background: var(--surface-list);
+      color: var(--ink-dark);
+      overflow: hidden;
+      box-shadow: var(--shadow-main);
+    }
+
+    .table-scroll {
+      width: 100%;
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+    }
+
+    thead th {
+      background: #0f172a;
+      color: #f8fafc;
+      font-size: 0.72rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      padding: 13px 14px;
+      white-space: nowrap;
+    }
+
+    tbody td {
+      padding: 12px 14px;
+      border-bottom: 1px solid #e2e8f0;
+      font-size: 0.85rem;
+      vertical-align: middle;
+    }
+
+    tbody tr:hover {
+      background: #f8fafc;
+    }
+
+    .plate-trigger-btn {
+      display: inline-flex;
+      align-items: center;
+      background: #ffffff;
+      border: 2px solid #0f172a;
+      border-radius: 6px;
+      padding: 0;
+      overflow: hidden;
+      font-family: var(--font-mono);
+      font-weight: 800;
+      cursor: pointer;
+      transition: transform 0.12s ease, box-shadow 0.12s ease;
+    }
+
+    .plate-trigger-btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 10px rgba(15, 23, 42, 0.22);
+    }
+
+    .plate-tag-eu {
+      background: #003399;
+      color: #ffffff;
+      font-size: 0.56rem;
+      padding: 4px 4px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      line-height: 1;
+    }
+
+    .plate-tag-num {
+      padding: 3px 8px;
+      font-size: 0.84rem;
+      color: #0f172a;
+    }
+
+    .division-pill {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 8px;
+      font-size: 0.75rem;
+      font-weight: 800;
+      background: #dbeafe;
+      color: #1e3a8a;
+      border: 1px solid #93c5fd;
+    }
+
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 0.74rem;
+      font-weight: 800;
+    }
+
+    .st-operativo {
+      background: #dcfce7;
+      color: #166534;
+      border: 1px solid #86efac;
+    }
+
+    .st-kaput {
+      background: #fee2e2;
+      color: #991b1b;
+      border: 1px solid #fca5a5;
+    }
+
+    .st-taller {
+      background: #fef3c7;
+      color: #92400e;
+      border: 1px solid #fcd34d;
+    }
+
+    .status-select-admin {
+      padding: 6px 8px;
+      border-radius: var(--radius-sm);
+      border: 1px solid #cbd5e1;
+      background: #ffffff;
+      color: #0f172a;
+      font-size: 0.78rem;
+      font-weight: 800;
+      cursor: pointer;
+    }
+
+    .mobile-cards {
+      display: none;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .mobile-card {
+      background: var(--surface-list);
+      color: var(--ink-dark);
+      border-radius: var(--radius-lg);
+      padding: 14px;
+      box-shadow: var(--shadow-main);
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    @media (max-width: 767px) {
+      .fleet-table-box {
+        display: none;
+      }
+      .mobile-cards {
+        display: flex;
+      }
+    }
+
+    /* =====================================================================
+       MODALS & TOASTS
+       ===================================================================== */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      z-index: 70;
+      background: rgba(2, 6, 23, 0.84);
+      backdrop-filter: blur(6px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 14px;
+      overflow-y: auto;
+    }
+
+    .modal-backdrop.open {
+      display: flex;
+    }
+
+    .modal-panel {
+      width: 100%;
+      max-width: 640px;
+      background: #0f172a;
+      color: #f8fafc;
+      border: 1px solid var(--line-strong);
+      border-radius: var(--radius-xl);
+      overflow: hidden;
+      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.84);
+    }
+
+    .modal-header {
+      padding: 14px 18px;
+      background: #020617;
+      border-bottom: 1px solid var(--line-soft);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .modal-header h2 {
+      margin: 0;
+      font-size: 0.96rem;
+      font-weight: 800;
+    }
+
+    .modal-body {
+      padding: 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .field-label {
+      display: block;
+      font-size: 0.72rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      color: #94a3b8;
+      margin-bottom: 4px;
+    }
+
+    .field-input, .field-select, .field-textarea {
+      width: 100%;
+      padding: 10px 12px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--line-strong);
+      background: #020617;
+      color: #ffffff;
+      font-size: 0.84rem;
+      font-family: var(--font-sans);
+      outline: none;
+    }
+
+    .field-input:focus, .field-select:focus, .field-textarea:focus {
+      border-color: var(--accent-green-bright);
+    }
+
+    .two-col {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 10px;
+    }
+
+    .import-preview {
+      max-height: 160px;
+      overflow: auto;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--line-soft);
+      background: #020617;
+      padding: 8px 10px;
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      color: #cbd5e1;
+      line-height: 1.45;
+    }
+
+    .share-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(135px, 1fr));
+      gap: 8px;
+    }
+
+    .shortcut-note {
+      padding: 11px 13px;
+      border-radius: var(--radius-md);
+      background: rgba(37, 99, 235, 0.16);
+      border: 1px solid rgba(96, 165, 250, 0.5);
+      font-size: 0.77rem;
+      color: #e0f2fe;
+      line-height: 1.45;
+    }
+
+    .detail-kv {
+      background: rgba(2, 6, 23, 0.78);
+      border: 1px solid var(--line-soft);
+      border-radius: var(--radius-md);
+      padding: 12px 14px;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 10px;
+    }
+
+    .detail-k {
+      font-size: 0.68rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      color: #94a3b8;
+    }
+
+    .detail-v {
+      font-size: 0.88rem;
+      font-weight: 800;
+      color: #ffffff;
+      margin-top: 2px;
+    }
+
+    .toast-area {
+      position: fixed;
+      right: 14px;
+      bottom: 14px;
+      z-index: 90;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      pointer-events: none;
+    }
+
+    .toast-msg {
+      padding: 10px 14px;
+      border-radius: var(--radius-md);
+      background: #0f172a;
+      color: #ffffff;
+      border: 1px solid var(--accent-green-bright);
+      font-size: 0.78rem;
+      font-weight: 800;
+      box-shadow: var(--shadow-main);
+    }
+
+    .toast-msg.error {
+      background: #450a0a;
+      border-color: #f87171;
+    }
+
+    .toast-msg.info {
+      background: #172554;
+      border-color: #60a5fa;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+  </style>
+</head>
+<body>
+  <!-- Integrated Saurer Ochsner M-72515 Historical Dark Glass Background -->
+  <div id="saurerBgPhoto" class="saurer-bg-photo"></div>
+  <div class="saurer-bg-scrim"></div>
+
+  <!-- =====================================================================
+       TOP BAR
+       ===================================================================== -->
+  <header class="topbar glass-box">
+    <div class="wrap topbar-inner">
+      <div class="brand-left">
+        <div class="emblem-frame" title="Saurer M-72515">
+          <img id="saurerFrontEmblemImg" src="1000054422_2.jpg" alt="Saurer M-72515" />
+          <span class="emblem-plate">M-72515</span>
+        </div>
+        <div>
+          <h1 class="app-name">FleetTrackDrivers</h1>
+          <div class="status-row">
+            <span id="cloudSyncBadge" class="sync-pill">
+              <span class="sync-dot"></span>
+              <span id="cloudSyncLabel">Caché local</span>
+            </span>
+            <span id="roleModeBadge" class="mode-pill">Consulta</span>
+            <span id="lastSyncClock" class="clock-text">Sin sincronizar</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="header-btns">
+        <button type="button" class="btn btn-green" onclick="triggerInstantUpdate()">⚡ Actualización Instantánea</button>
+        <button type="button" class="btn btn-blue" onclick="openShareModal()">Compartir</button>
+        <button type="button" id="openAdminBtn" class="btn btn-amber" onclick="openAdminPinModal()">Acceso Admin</button>
+        <button type="button" id="exitAdminBtn" class="btn btn-red hidden" onclick="exitAdminMode()">Salir Admin</button>
+      </div>
+    </div>
+
+    <!-- Administrator Panel (Unlocked Only With Hidden PIN 0484) -->
+    <div class="wrap">
+      <section id="adminPanel" class="admin-panel hidden" aria-label="Panel de administrador">
+        <div class="admin-top-row">
+          <span style="font-size:0.8rem; font-weight:900; color:#fde68a;">PANEL ADMINISTRADOR • FFZF</span>
+          <div style="display:flex; flex-wrap:wrap; gap:8px;">
+            <button type="button" class="btn btn-green" onclick="openImportModal()">Importar Excel / Sheets</button>
+            <button type="button" class="btn btn-blue" onclick="openAddVehicleModal()">+ Añadir / Editar Vehículo</button>
+            <button type="button" class="btn btn-dark" onclick="restoreSeedFleet()">Restaurar Base</button>
+            <button type="button" class="btn btn-red" onclick="clearAdminDatabase()">Vaciar Base</button>
+          </div>
+        </div>
+
+        <!-- Free Cloud Sync Configuration (Firebase Realtime Database) -->
+        <div class="cloud-box">
+          <div style="display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:6px;">
+            <span style="font-size:0.74rem; font-weight:800; color:#93c5fd;">Sincronización Gratuita en Tiempo Real (Firebase Realtime Database)</span>
+            <span id="cloudEndpointHint" style="font-family:var(--font-mono); font-size:0.68rem; color:#94a3b8;"></span>
+          </div>
+          <div class="cloud-form-row">
+            <input
+              type="url"
+              id="firebaseDbUrlInput"
+              class="field-input"
+              style="font-family:var(--font-mono); font-size:0.78rem;"
+              placeholder="https://tu-proyecto-default-rtdb.firebaseio.com"
+            />
+            <button type="button" class="btn btn-blue" onclick="saveAndConnectCloudDb()">Guardar y Conectar</button>
+            <button type="button" class="btn btn-dark" onclick="testCloudDbConnection()">Probar Conexión</button>
+          </div>
+        </div>
+      </section>
+    </div>
+  </header>
+
+  <!-- =====================================================================
+       MAIN CONTENT
+       ===================================================================== -->
+  <main class="wrap main-stack">
+
+    <!-- Unified Search Bar + Live Dropdown + Manual Plate Carousel -->
+    <section class="glass-box search-panel" aria-label="Buscador unificado">
+      <div class="search-row">
+        <div class="search-shell" id="unifiedSearchShell">
+          <span class="eu-badge"><span>★</span><span>E</span></span>
+          <input
+            type="text"
+            id="unifiedSearchInput"
+            class="search-input"
+            placeholder="Buscar matrícula, vehículo o división..."
+            oninput="handleUnifiedSearchInput()"
+            onfocus="openSearchDropdown()"
+            onclick="openSearchDropdown()"
+            autocomplete="off"
+          />
+          <button type="button" id="clearSearchBtn" class="search-clear" onclick="clearUnifiedSearch()" aria-label="Limpiar búsqueda">×</button>
+          <div id="searchDropdownMenu" class="suggest-dropdown hidden" role="listbox"></div>
+        </div>
+
+        <button type="button" class="btn btn-green" onclick="toggleSearchDropdown()">Desplegable ▾</button>
+        <button type="button" id="carouselToggleBtn" class="btn btn-blue" onclick="toggleManualCarousel()">Carrusel Manual</button>
+      </div>
+
+      <div id="manualCarouselPanel" class="carousel-box hidden">
+        <div class="carousel-head">
+          <span style="font-size:0.76rem; font-weight:800; color:#93c5fd;">Carrusel de Matrículas</span>
+          <div style="display:flex; gap:6px;">
+            <button type="button" class="btn btn-dark" style="padding:4px 10px;" onclick="scrollCarousel(-1)">◀</button>
+            <button type="button" class="btn btn-dark" style="padding:4px 10px;" onclick="scrollCarousel(1)">▶</button>
+            <button type="button" class="btn btn-dark" style="padding:4px 9px;" onclick="toggleManualCarousel(false)">×</button>
+          </div>
+        </div>
+        <div id="carouselTrack" class="carousel-rail"></div>
+      </div>
+    </section>
+
+    <!-- FleetKaputStatus & FleetWorkshopStatus Quick Status Boxes -->
+    <section class="smartbcn-grid" aria-label="Estado SmartBCN FFZF">
+      <div class="smartbcn-card kaput">
+        <div class="smartbcn-top">
+          <span class="smartbcn-name">FleetKaputStatus</span>
+          <span id="kaputCountBadge" class="smartbcn-counter">0</span>
+        </div>
+        <div class="smartbcn-url">https://smartbcn.fcc.es/SBCNC/FleetStatus/?nomesAvariats=true&amp;centre=FFZF</div>
+        <div style="display:flex; gap:8px; flex-wrap:wrap;">
+          <a href="https://smartbcn.fcc.es/SBCNC/FleetStatus/?nomesAvariats=true&centre=FFZF" target="_blank" rel="noopener noreferrer" class="btn btn-red">Abrir FleetKaputStatus ↗</a>
+        </div>
+      </div>
+
+      <div class="smartbcn-card workshop">
+        <div class="smartbcn-top">
+          <span class="smartbcn-name">FleetWorkshopStatus</span>
+          <span id="workshopCountBadge" class="smartbcn-counter">0</span>
+        </div>
+        <div class="smartbcn-url">https://smartbcn.fcc.es/SBCNC/FleetStatus/?centre=FFZF</div>
+        <div style="display:flex; gap:8px; flex-wrap:wrap;">
+          <a href="https://smartbcn.fcc.es/SBCNC/FleetStatus/?centre=FFZF" target="_blank" rel="noopener noreferrer" class="btn btn-amber">Abrir FleetWorkshopStatus ↗</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- Always-Visible Complete Fleet Table & Mobile Cards at Bottom -->
+    <section class="glass-box list-header-bar">
+      <span id="fleetCounterLabel" class="list-counter">0 vehículos</span>
+      <button type="button" id="resetFilterBtn" class="btn btn-dark hidden" onclick="clearUnifiedSearch()">Mostrar todos</button>
+    </section>
+
+    <section class="fleet-table-box" aria-label="Listado completo de flota">
+      <div class="table-scroll">
+        <table>
+          <thead>
+            <tr>
+              <th>Matrícula</th>
+              <th>Vehículo</th>
+              <th>División</th>
+              <th>Estado</th>
+            </tr>
+          </thead>
+          <tbody id="fleetTableBody"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="fleetMobileCards" class="mobile-cards" aria-label="Listado móvil de flota"></section>
+  </main>
+
+  <!-- =====================================================================
+       MODALS
+       ===================================================================== -->
+
+  <!-- PIN Modal (0484 validated internally; never rendered in UI) -->
+  <div id="pinModal" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="pinModalHeading">
+    <div class="modal-panel" style="max-width:380px;">
+      <div class="modal-header">
+        <h2 id="pinModalHeading">Acceso Administrador</h2>
+        <button type="button" class="btn btn-dark" style="padding:4px 9px;" onclick="closeModal('pinModal')">×</button>
+      </div>
+      <form class="modal-body" onsubmit="verifyAdminPin(event)">
+        <div>
+          <label class="field-label" for="pinCodeInput">Contraseña / PIN</label>
+          <input type="password" id="pinCodeInput" class="field-input" style="text-align:center; font-family:var(--font-mono); font-size:1.25rem; letter-spacing:0.35em;" maxlength="8" required autocomplete="off" />
+        </div>
+        <div id="pinErrorBox" class="hidden" style="font-size:0.76rem; font-weight:800; color:#fca5a5;">Contraseña incorrecta.</div>
+        <div style="display:flex; justify-content:flex-end; gap:8px;">
+          <button type="button" class="btn btn-dark" onclick="closeModal('pinModal')">Cancelar</button>
+          <button type="submit" class="btn btn-amber">Entrar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Share & Home Screen Shortcut Modal -->
+  <div id="shareModal" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="shareModalHeading">
+    <div class="modal-panel" style="max-width:520px;">
+      <div class="modal-header">
+        <h2 id="shareModalHeading">Compartir FleetTrackDrivers</h2>
+        <button type="button" class="btn btn-dark" style="padding:4px 9px;" onclick="closeModal('shareModal')">×</button>
+      </div>
+      <div class="modal-body">
+        <div>
+          <label class="field-label" for="shareLinkInput">Enlace gratuito</label>
+          <div style="display:flex; gap:8px;">
+            <input type="text" id="shareLinkInput" class="field-input" style="font-family:var(--font-mono); font-size:0.74rem;" readonly />
+            <button type="button" class="btn btn-blue" onclick="copyShareUrl()">Copiar</button>
+          </div>
+        </div>
+
+        <div class="share-grid">
+          <a id="shareWhatsappBtn" href="#" target="_blank" rel="noopener noreferrer" class="btn btn-green">WhatsApp</a>
+          <a id="shareEmailBtn" href="#" class="btn btn-blue">Correo</a>
+          <button type="button" class="btn btn-amber" onclick="triggerShortcutInstall()">Acceso Directo</button>
+        </div>
+
+        <div id="shortcutGuideBox" class="shortcut-note">
+          <strong>Acceso directo en móvil o PC:</strong> en Android/Chrome o escritorio pulsa el menú del navegador y elige <em>Añadir a pantalla de inicio</em> o <em>Instalar aplicación</em>; en iPhone/Safari pulsa <em>Compartir</em> y luego <em>Añadir a pantalla de inicio</em>.
+        </div>
+
+        <div>
+          <label class="field-label" for="shareSummaryTextarea">Resumen de flota</label>
+          <textarea id="shareSummaryTextarea" rows="4" class="field-textarea" style="font-size:0.76rem;" readonly></textarea>
+        </div>
+
+        <div style="display:flex; justify-content:flex-end; gap:8px;">
+          <button type="button" class="btn btn-dark" onclick="copyShareSummary()">Copiar Resumen</button>
+          <button type="button" class="btn btn-green" onclick="shareViaDevice()">Compartir</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Excel / Sheets / CSV / TSV / TXT Import Modal (Admin 0484) -->
+  <div id="importModal" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="importModalHeading">
+    <div class="modal-panel">
+      <div class="modal-header">
+        <h2 id="importModalHeading">Importar Excel / Sheets</h2>
+        <button type="button" class="btn btn-dark" style="padding:4px 9px;" onclick="closeModal('importModal')">×</button>
+      </div>
+      <div class="modal-body">
+        <div class="two-col">
+          <div>
+            <label class="field-label" for="importFileInput">Archivo (.xlsx, .xlsm, .csv, .tsv, .txt)</label>
+            <input type="file" id="importFileInput" class="field-input" accept=".xlsx,.xlsm,.xls,.csv,.tsv,.txt" onchange="readImportFile(event)" />
+          </div>
+          <div>
+            <label class="field-label" for="importModeSelect">Modo de actualización</label>
+            <select id="importModeSelect" class="field-select" onchange="stageImportRows()">
+              <option value="merge">Combinar y actualizar por matrícula</option>
+              <option value="replace">Reemplazar toda la flota</option>
+            </select>
+          </div>
+        </div>
+
+        <div>
+          <label class="field-label" for="importPasteTextarea">Pegar filas (MATRÍCULA, VEHÍCULO, DIVISIÓN, ESTADO)</label>
+          <textarea id="importPasteTextarea" rows="4" class="field-textarea" style="font-family:var(--font-mono); font-size:0.75rem;" oninput="stageImportRows()" placeholder="0485LCV	OPEL COMBO	Fuentes	Operativo
+0485MBT	DAILY CL CANGREJO	FCC	Operativo"></textarea>
+        </div>
+
+        <div style="display:flex; align-items:center; justify-content:space-between; gap:8px; flex-wrap:wrap;">
+          <span id="stagedCountText" style="font-size:0.78rem; font-weight:800; color:#86efac;">0 vehículos listos</span>
+          <span style="font-size:0.72rem; color:#93c5fd; font-weight:700;">Orden automático: número (menor→mayor) + letras (A→Z)</span>
+        </div>
+
+        <div id="importPreviewList" class="import-preview hidden"></div>
+
+        <div style="display:flex; justify-content:flex-end; gap:8px;">
+          <button type="button" class="btn btn-dark" onclick="closeModal('importModal')">Cancelar</button>
+          <button type="button" id="applyImportBtn" class="btn btn-green" onclick="applyImportedRows()" disabled>Importar y Sincronizar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add / Edit Vehicle Modal (Admin 0484) -->
+  <div id="vehicleFormModal" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="vehicleFormHeading">
+    <div class="modal-panel">
+      <div class="modal-header">
+        <h2 id="vehicleFormHeading">Añadir / Editar Vehículo</h2>
+        <button type="button" class="btn btn-dark" style="padding:4px 9px;" onclick="closeModal('vehicleFormModal')">×</button>
+      </div>
+      <form class="modal-body" onsubmit="saveVehicleForm(event)">
+        <div class="two-col">
+          <div>
+            <label class="field-label" for="formPlateInput">Matrícula</label>
+            <input type="text" id="formPlateInput" class="field-input" style="font-family:var(--font-mono); font-weight:800; text-transform:uppercase;" placeholder="Ej. 0485LCV" required />
+          </div>
+          <div>
+            <label class="field-label" for="formDivisionInput">División</label>
+            <input type="text" id="formDivisionInput" class="field-input" placeholder="Ej. FCC" required />
+          </div>
+        </div>
+        <div>
+          <label class="field-label" for="formModelInput">Vehículo</label>
+          <input type="text" id="formModelInput" class="field-input" placeholder="Ej. OPEL COMBO" required />
+        </div>
+        <div>
+          <label class="field-label" for="formStatusSelect">Estado</label>
+          <select id="formStatusSelect" class="field-select">
+            <option value="Operativo">Operativo</option>
+            <option value="FleetKaputStatus">FleetKaputStatus</option>
+            <option value="En Taller">En Taller</option>
+          </select>
+        </div>
+        <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:4px;">
+          <button type="button" class="btn btn-dark" onclick="closeModal('vehicleFormModal')">Cancelar</button>
+          <button type="submit" class="btn btn-blue">Guardar y Sincronizar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Vehicle Detail Modal (Click on Plate with WhatsApp Quick Send) -->
+  <div id="vehicleDetailModal" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="detailPlateHeading">
+    <div class="modal-panel" style="max-width:460px;">
+      <div class="modal-header">
+        <h2 id="detailPlateHeading" style="font-family:var(--font-mono);">Matrícula</h2>
+        <button type="button" class="btn btn-dark" style="padding:4px 9px;" onclick="closeModal('vehicleDetailModal')">×</button>
+      </div>
+      <div class="modal-body">
+        <div class="detail-kv">
+          <div>
+            <div class="detail-k">Vehículo</div>
+            <div id="detailModelValue" class="detail-v"></div>
+          </div>
+          <div>
+            <div class="detail-k">División</div>
+            <div id="detailDivisionValue" class="detail-v"></div>
+          </div>
+          <div>
+            <div class="detail-k">Estado</div>
+            <div id="detailStatusValue" class="detail-v"></div>
+          </div>
+        </div>
+        <div style="display:flex; flex-wrap:wrap; justify-content:flex-end; gap:8px;">
+          <button type="button" class="btn btn-dark" onclick="copyDetailInfo()">Copiar Ficha</button>
+          <a id="detailWhatsappBtn" href="#" target="_blank" rel="noopener noreferrer" class="btn btn-green">Enviar por WhatsApp</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="toastContainer" class="toast-area" aria-live="polite"></div>
+
+  <script>
+    /* =====================================================================
+       CONSTANTS & PRELOADED FFZF FLEET SEED
+       ===================================================================== */
+    const ADMIN_PIN = "0484";
+    const FLEET_STORAGE_KEY = "FleetTrackDrivers_fleet_v5";
+    const CLOUD_URL_STORAGE_KEY = "FleetTrackDrivers_rtdb_url_v5";
+    const LAST_SYNC_STORAGE_KEY = "FleetTrackDrivers_last_sync_v5";
+
+    const FLEET_SEED = [
+      { plate: "0041JSR", model: "CAPELOTTO 3EJES", division: "Alcantarillado", status: "Operativo" },
+      { plate: "0078LSC", model: "FIAT DOBLO", division: "Pintadas", status: "Operativo" },
+      { plate: "0079LSC", model: "FIAT DOBLO", division: "Pintadas", status: "Operativo" },
+      { plate: "0081LSC", model: "FIAT DOBLO", division: "Pintadas", status: "En Taller" },
+      { plate: "0082LSC", model: "FIAT DOBLO", division: "Pintadas", status: "Operativo" },
+      { plate: "0159MTX", model: "CITROËN FURGONETA", division: "Pintadas", status: "Operativo" },
+      { plate: "0193LWF", model: "FURGON REPARACIONES", division: "FCC", status: "Operativo" },
+      { plate: "0195LWF", model: "FURGON REPARACIONES", division: "FCC", status: "Operativo" },
+      { plate: "0203LWF", model: "FURGON REPARACIONES", division: "FCC", status: "Operativo" },
+      { plate: "0240MJK", model: "TOYOTA PROACE ELEC", division: "Fuentes", status: "Operativo" },
+      { plate: "0247JSS", model: "CAPELOTTO 3EJES", division: "Alcantarillado", status: "FleetKaputStatus" },
+      { plate: "0280LHS", model: "KANGOO", division: "Obras", status: "Operativo" },
+      { plate: "0310LBT", model: "OPEL COMBO", division: "Colegios", status: "Operativo" },
+      { plate: "0427MFV", model: "TOYOTA PROACE ELEC", division: "Fuentes", status: "Operativo" },
+      { plate: "0428MFV", model: "TOYOTA PROACE ELEC", division: "Fuentes", status: "Operativo" },
+      { plate: "0483MBT", model: "DAILY CL CANGREJO", division: "FCC", status: "En Taller" },
+      { plate: "0462JPH", model: "DAILY FURGÓN", division: "Alcantarillado", status: "Operativo" },
+      { plate: "0485LCV", model: "OPEL COMBO", division: "Fuentes", status: "Operativo" },
+      { plate: "0493MJS", model: "CISTERNA ATIS ELECTRICA", division: "FCC", status: "Operativo" },
+      { plate: "0318MBG", model: "URO CROSS OLYMPUS 11M", division: "FCC", status: "Operativo" },
+      { plate: "0615LYR", model: "REGADOR 4 EJES 20M", division: "FCC", status: "Operativo" },
+      { plate: "0616MYR", model: "CROSS 16 BICO OLYMPUS", division: "FCC", status: "Operativo" },
+      { plate: "0709JWN", model: "MOTO BMW EVOLUTION", division: "Fuentes", status: "Operativo" },
+      { plate: "0922LXH", model: "FURGON AGUA", division: "FCC", status: "Operativo" },
+      { plate: "1009LXS", model: "DAILY PAPELERAS 7M", division: "FCC", status: "Operativo" },
+      { plate: "1069MCG", model: "LAVA CL DERECHA", division: "FCC", status: "Operativo" },
+      { plate: "1184MBB", model: "ABIERTA GRUA+PLAT 12", division: "FCC", status: "Operativo" },
+      { plate: "1220MFB", model: "CUBA 2 EJES URO", division: "FCC", status: "Operativo" },
+      { plate: "1240KHH", model: "ISUZU", division: "Fuentes", status: "Operativo" },
+      { plate: "1406JYC", model: "FIAT DUCATO", division: "Pintadas", status: "Operativo" },
+      { plate: "1487MHW", model: "BICO ELECTRICO", division: "FCC", status: "FleetKaputStatus" },
+      { plate: "1566LZP", model: "REGADOR 3 EJES 14M", division: "FCC", status: "Operativo" },
+      { plate: "1674MZC", model: "POLIVALENTE", division: "FCC", status: "Operativo" },
+      { plate: "1745MDH", model: "AMPLIROLL 3 EJES", division: "FCC", status: "Operativo" },
+      { plate: "1881MGG", model: "MAXUS (SAIC MOTOR)", division: "Fuentes", status: "Operativo" },
+      { plate: "2016KZK", model: "CITROËN BERLINGO", division: "Alcantarillado", status: "Operativo" },
+      { plate: "2070MBD", model: "ABIERTA PLUMA 21M", division: "FCC", status: "Operativo" },
+      { plate: "2378MJF", model: "IRIZAR C L", division: "FCC", status: "Operativo" },
+      { plate: "2411MDJ", model: "DAILY ELECTRICA 4,5M", division: "FCC", status: "Operativo" },
+      { plate: "2495LTY", model: "CROSS 12 BICO HÍBRIDO", division: "FCC", status: "Operativo" },
+      { plate: "2875JYD", model: "DAILY CESTA", division: "Pintadas", status: "Operativo" },
+      { plate: "3293LWH", model: "KANGOO", division: "UTE Cat Salut", status: "Operativo" },
+      { plate: "4067JTS", model: "CAPELOTTO 2EJES", division: "Subsuelo", status: "Operativo" },
+      { plate: "4195KGB", model: "VW CRAFTER VERIFICACIÓN", division: "FCC", status: "Operativo" },
+      { plate: "4335JTS", model: "CAPELOTTO 2EJES", division: "Subsuelo", status: "Operativo" },
+      { plate: "4532MTK", model: "DAILY R. COMPACTADOR E.", division: "FCC", status: "Operativo" },
+      { plate: "4600LXX", model: "KANGOO MANDO", division: "FCC", status: "Operativo" },
+      { plate: "4670MNG", model: "DACIA SPRING ELEC", division: "Pintadas", status: "Operativo" },
+      { plate: "4734JTS", model: "CAPELOTTO 3EJES", division: "Subsuelo", status: "Operativo" },
+      { plate: "4770MTK", model: "DAILY ORUS BICO ELECTR. 7m3", division: "FCC", status: "Operativo" },
+      { plate: "5072MFW", model: "CROSS 7M PEQUEÑO", division: "FCC", status: "Operativo" },
+      { plate: "5774LJF", model: "NIRO HÍBRIDO", division: "UTE Cat Salut", status: "Operativo" },
+      { plate: "6234MKY", model: "IRIZAR CAJA ABIERTA 2EJES", division: "FCC", status: "Operativo" },
+      { plate: "6293JTJ", model: "EUROCARGO ABIERTO PLUMA", division: "Obras", status: "Operativo" },
+      { plate: "6471JGR", model: "PARTNER ELECTRICA", division: "Obras", status: "Operativo" },
+      { plate: "6608MSW", model: "TOYOTA LAND CRUISER", division: "Salvamento", status: "Operativo" },
+      { plate: "6641MSS", model: "TOYOTA LAND CRUISER", division: "Salvamento", status: "Operativo" }
+    ];
+
+    /* =====================================================================
+       VECTOR FALLBACKS FOR SAURER M-72515 EMBLEM & BACKGROUND
+       ===================================================================== */
+    function buildSaurerEmblemSvg() {
+      const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128">
+        <defs>
+          <linearGradient id="cabGrad" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#94a3b8"/>
+            <stop offset="55%" stop-color="#f8fafc"/>
+            <stop offset="100%" stop-color="#cbd5e1"/>
+          </linearGradient>
+        </defs>
+        <rect width="128" height="128" rx="20" fill="#1e3a8a"/>
+        <rect x="28" y="16" width="72" height="38" rx="10" fill="url(#cabGrad)" stroke="#0f172a" stroke-width="3.5"/>
+        <rect x="35" y="23" width="26" height="19" rx="3" fill="#1e293b"/>
+        <rect x="67" y="23" width="26" height="19" rx="3" fill="#1e293b"/>
+        <path d="M16 70 Q22 50 42 50 L86 50 Q106 50 112 70 L112 92 L16 92 Z" fill="#f8fafc" stroke="#0f172a" stroke-width="3.5"/>
+        <rect x="46" y="46" width="36" height="46" rx="6" fill="#0f172a"/>
+        <line x1="64" y1="46" x2="64" y2="92" stroke="#cbd5e1" stroke-width="2.5"/>
+        <circle cx="28" cy="72" r="9" fill="#fef08a" stroke="#0f172a" stroke-width="2.5"/>
+        <circle cx="100" cy="72" r="9" fill="#fef08a" stroke="#0f172a" stroke-width="2.5"/>
+        <rect x="14" y="90" width="100" height="11" rx="3" fill="#0f172a"/>
+      </svg>`;
+      return "data:image/svg+xml;charset=UTF-8," + encodeURIComponent(svg);
+    }
+
+    function buildSaurerBgSvg() {
+      const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 810">
+        <defs>
+          <linearGradient id="bgGrad" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stop-color="#071024"/>
+            <stop offset="55%" stop-color="#10254b"/>
+            <stop offset="100%" stop-color="#072b22"/>
+          </linearGradient>
+        </defs>
+        <rect width="1440" height="810" fill="url(#bgGrad)"/>
+        <g transform="translate(150,210)" opacity="0.22" stroke="#e2e8f0" stroke-width="4" fill="none">
+          <rect x="260" y="35" width="520" height="245" rx="20" fill="#94a3b8" fill-opacity="0.22"/>
+          <path d="M 780 50 C 865 78, 880 190, 825 280 L 780 280 Z" fill="#64748b" fill-opacity="0.22"/>
+          <rect x="115" y="75" width="145" height="205" rx="14" fill="#cbd5e1" fill-opacity="0.22"/>
+          <path d="M 20 168 L 115 145 L 115 280 L 20 280 Z" fill="#f8fafc" fill-opacity="0.2"/>
+          <circle cx="132" cy="296" r="58" fill="#0f172a"/>
+          <circle cx="675" cy="296" r="58" fill="#0f172a"/>
+        </g>
+        <rect x="64" y="656" width="320" height="44" rx="7" fill="#ffffff" stroke="#0f172a" stroke-width="4"/>
+        <text x="224" y="686" text-anchor="middle" fill="#0f172a" font-family="monospace" font-weight="900" font-size="24" letter-spacing="4">M ·· 72515</text>
+      </svg>`;
+      return "data:image/svg+xml;charset=UTF-8," + encodeURIComponent(svg);
+    }
+
+    /* =====================================================================
+       APPLICATION STATE & FIREBASE REALTIME DATABASE STREAM
+       ===================================================================== */
+    let fleetRecords = [];
+    let isAdminMode = false;
+    let searchQueryText = "";
+    let isCarouselVisible = false;
+    let stagedImportList = [];
+    let activeDetailPlate = "";
+    let cloudDbBaseUrl = "";
+    let cloudStreamSource = null;
+    let isCloudConnected = false;
+
+    function normalizePlate(raw) {
+      return String(raw || "").trim().toUpperCase().replace(/[^A-Z0-9]/g, "");
+    }
+
+    function parsePlateSortKey(plateStr) {
+      const clean = normalizePlate(plateStr);
+      const match = clean.match(/^0*(\d+)([A-Z]*)$/);
+      if (match) {
+        return {
+          num: parseInt(match[1], 10),
+          letters: match[2] || "",
+          raw: clean
+        };
+      }
+      const digitsOnly = clean.replace(/\D+/g, "");
+      const lettersOnly = clean.replace(/[^A-Z]+/g, "");
+      return {
+        num: digitsOnly ? parseInt(digitsOnly, 10) : Number.MAX_SAFE_INTEGER,
+        letters: lettersOnly,
+        raw: clean
+      };
+    }
+
+    function comparePlatesAscending(plateA, plateB) {
+      const a = parsePlateSortKey(plateA);
+      const b = parsePlateSortKey(plateB);
+      if (a.num !== b.num) {
+        return a.num - b.num;
+      }
+      if (a.letters !== b.letters) {
+        return a.letters.localeCompare(b.letters, "es", { sensitivity: "base" });
+      }
+      return a.raw.localeCompare(b.raw, "es", { sensitivity: "base" });
+    }
+
+    function sortFleetInPlace(arr) {
+      arr.sort(function(x, y) {
+        return comparePlatesAscending(x.plate, y.plate);
+      });
+      return arr;
+    }
+
+    function normalizeDivision(raw) {
+      const s = String(raw || "").trim();
+      if (!s) return "FCC";
+      const low = s.toLowerCase();
+      if (low === "fcc") return "FCC";
+      if (low.includes("alcantarillado")) return "Alcantarillado";
+      if (low.includes("pintada")) return "Pintadas";
+      if (low.includes("fuente")) return "Fuentes";
+      if (low.includes("subsuelo")) return "Subsuelo";
+      if (low.includes("obra")) return "Obras";
+      if (low.includes("colegio")) return "Colegios";
+      if (low.includes("salut") || low.includes("ute")) return "UTE Cat Salut";
+      if (low.includes("salvamento")) return "Salvamento";
+      return s.charAt(0).toUpperCase() + s.slice(1);
+    }
+
+    function normalizeStatus(raw) {
+      const low = String(raw || "").trim().toLowerCase();
+      if (low.includes("kaput") || low.includes("aver")) return "FleetKaputStatus";
+      if (low.includes("taller") || low.includes("workshop")) return "En Taller";
+      return "Operativo";
+    }
+
+    function sanitizeFirebaseBaseUrl(rawUrl) {
+      const trimmed = String(rawUrl || "").trim().replace(/\/+$/, "");
+      if (!trimmed) return "";
+      if (!/^https?:\/\//i.test(trimmed)) return "";
+      return trimmed.replace(/\/fleetTrackDrivers(?:\/vehicles)?\.json$/i, "");
+    }
+
+    function buildFleetEndpointUrl(baseUrl) {
+      const clean = sanitizeFirebaseBaseUrl(baseUrl);
+      if (!clean) return "";
+      return `${clean}/fleetTrackDrivers/vehicles.json`;
+    }
+
+    function pushToast(message, type) {
+      const area = document.getElementById("toastContainer");
+      if (!area) return;
+      const item = document.createElement("div");
+      item.className = "toast-msg" + (type === "error" ? " error" : type === "info" ? " info" : "");
+      item.textContent = message;
+      area.appendChild(item);
+      setTimeout(function() {
+        item.style.opacity = "0";
+        item.style.transition = "opacity 0.25s ease";
+        setTimeout(function() { item.remove(); }, 260);
+      }, 2800);
+    }
+
+    function openModal(id) {
+      const el = document.getElementById(id);
+      if (el) el.classList.add("open");
+    }
+
+    function closeModal(id) {
+      const el = document.getElementById(id);
+      if (el) el.classList.remove("open");
+    }
+
+    function copyToClipboardSafe(text, toastMsg) {
+      const val = String(text || "");
+      try {
+        const ta = document.createElement("textarea");
+        ta.value = val;
+        ta.setAttribute("readonly", "");
+        ta.style.position = "fixed";
+        ta.style.left = "-9999px";
+        document.body.appendChild(ta);
+        ta.select();
+        ta.setSelectionRange(0, val.length);
+        document.execCommand("copy");
+        document.body.removeChild(ta);
+        pushToast(toastMsg || "Copiado");
+      } catch (_) {
+        pushToast("No se pudo copiar automáticamente", "info");
+      }
+    }
+
+    function recordSyncTimestamp(label) {
+      const now = new Date();
+      const timeStr = now.toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+      const full = label ? `${timeStr} • ${label}` : timeStr;
+      document.getElementById("lastSyncClock").textContent = full;
+      try {
+        localStorage.setItem(LAST_SYNC_STORAGE_KEY, full);
+      } catch (_) {}
+    }
+
+    function updateSyncBadgeUI(connected, labelText) {
+      isCloudConnected = !!connected;
+      const badge = document.getElementById("cloudSyncBadge");
+      const label = document.getElementById("cloudSyncLabel");
+      const hint = document.getElementById("cloudEndpointHint");
+
+      if (connected) {
+        badge.classList.add("cloud-live");
+        label.textContent = labelText || "Nube sincronizada";
+      } else {
+        badge.classList.remove("cloud-live");
+        label.textContent = labelText || "Caché local";
+      }
+
+      if (hint) {
+        const ep = buildFleetEndpointUrl(cloudDbBaseUrl);
+        hint.textContent = ep ? `Endpoint: ${ep}` : "Sin URL de nube (usando caché local)";
+      }
+    }
+
+    /* =====================================================================
+       LOCALSTORAGE CACHE & CLOUD SYNC (FIREBASE REALTIME DATABASE)
+       ===================================================================== */
+    function saveLocalCache() {
+      sortFleetInPlace(fleetRecords);
+      try {
+        localStorage.setItem(FLEET_STORAGE_KEY, JSON.stringify(fleetRecords));
+      } catch (_) {}
+    }
+
+    function loadLocalCache() {
+      try {
+        const raw = localStorage.getItem(FLEET_STORAGE_KEY);
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          if (Array.isArray(parsed)) {
+            fleetRecords = parsed.map(function(row) {
+              return {
+                plate: normalizePlate(row.plate),
+                model: String(row.model || "").trim().toUpperCase(),
+                division: normalizeDivision(row.division),
+                status: normalizeStatus(row.status)
+              };
+            }).filter(function(row) { return row.plate.length >= 4; });
+            sortFleetInPlace(fleetRecords);
+            return;
+          }
+        }
+      } catch (_) {}
+      fleetRecords = sortFleetInPlace(FLEET_SEED.map(function(r) { return Object.assign({}, r); }));
+    }
+
+    function parseCloudPayloadToList(payload) {
+      if (!payload) return null;
+      const rawItems = Array.isArray(payload)
+        ? payload.filter(Boolean)
+        : (typeof payload === "object" ? Object.values(payload).filter(Boolean) : []);
+
+      const cleaned = rawItems.map(function(item) {
+        return {
+          plate: normalizePlate(item.plate),
+          model: String(item.model || "VEHÍCULO").trim().toUpperCase(),
+          division: normalizeDivision(item.division),
+          status: normalizeStatus(item.status)
+        };
+      }).filter(function(item) { return item.plate.length >= 4; });
+
+      return sortFleetInPlace(cleaned);
+    }
+
+    async function pullFleetFromCloud(showFeedback) {
+      const endpoint = buildFleetEndpointUrl(cloudDbBaseUrl);
+      if (!endpoint) {
+        updateSyncBadgeUI(false, "Caché local");
+        return false;
+      }
+
+      try {
+        const sep = endpoint.indexOf("?") === -1 ? "?" : "&";
+        const resp = await fetch(`${endpoint}${sep}t=${Date.now()}`, { cache: "no-store" });
+        if (!resp.ok) {
+          throw new Error(`HTTP ${resp.status}`);
+        }
+        const data = await resp.json();
+        const parsedList = parseCloudPayloadToList(data);
+        if (parsedList && parsedList.length > 0) {
+          fleetRecords = parsedList;
+          saveLocalCache();
+          updateSyncBadgeUI(true, "Nube sincronizada");
+          recordSyncTimestamp("Nube RTDB");
+          renderAllViews();
+          if (showFeedback) pushToast("Flota actualizada desde la nube");
+          return true;
+        }
+        updateSyncBadgeUI(true, "Nube conectada");
+        recordSyncTimestamp("Nube vacía");
+        if (showFeedback) pushToast("Nube conectada (sin registros aún)", "info");
+        return true;
+      } catch (_) {
+        updateSyncBadgeUI(false, "Sin red / Caché local");
+        if (showFeedback) pushToast("Sin conexión a nube; usando caché local", "error");
+        return false;
+      }
+    }
+
+    async function pushFleetToCloud() {
+      const endpoint = buildFleetEndpointUrl(cloudDbBaseUrl);
+      if (!endpoint) {
+        updateSyncBadgeUI(false, "Caché local");
+        return false;
+      }
+
+      sortFleetInPlace(fleetRecords);
+      const mapPayload = {};
+      fleetRecords.forEach(function(item) {
+        mapPayload[item.plate] = {
+          plate: item.plate,
+          model: item.model,
+          division: item.division,
+          status: item.status
+        };
+      });
+
+      try {
+        const resp = await fetch(endpoint, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(mapPayload)
+        });
+        if (!resp.ok) {
+          throw new Error(`HTTP ${resp.status}`);
+        }
+        updateSyncBadgeUI(true, "Nube sincronizada");
+        recordSyncTimestamp("Publicado en nube");
+        return true;
+      } catch (_) {
+        updateSyncBadgeUI(false, "Error envío nube");
+        pushToast("Guardado en local; revisa permisos de la base en la nube", "error");
+        return false;
+      }
+    }
+
+    function connectRealtimeCloudListener() {
+      if (cloudStreamSource) {
+        try { cloudStreamSource.close(); } catch (_) {}
+        cloudStreamSource = null;
+      }
+
+      const endpoint = buildFleetEndpointUrl(cloudDbBaseUrl);
+      if (!endpoint || typeof EventSource === "undefined") {
+        updateSyncBadgeUI(false, "Caché local");
+        return;
+      }
+
+      try {
+        const es = new EventSource(endpoint);
+        cloudStreamSource = es;
+
+        es.addEventListener("put", function(evt) {
+          try {
+            const msg = JSON.parse(evt.data || "{}");
+            if (msg.path === "/" && msg.data) {
+              const list = parseCloudPayloadToList(msg.data);
+              if (list && list.length > 0) {
+                fleetRecords = list;
+                saveLocalCache();
+                updateSyncBadgeUI(true, "Nube en vivo");
+                recordSyncTimestamp("Tiempo real");
+                renderAllViews();
+              }
+            } else if (msg.path && msg.path !== "/") {
+              pullFleetFromCloud(false);
+            }
+          } catch (_) {}
+        });
+
+        es.addEventListener("patch", function() {
+          pullFleetFromCloud(false);
+        });
+
+        es.onerror = function() {
+          updateSyncBadgeUI(false, "Caché local");
+        };
+      } catch (_) {
+        updateSyncBadgeUI(false, "Caché local");
+      }
+    }
+
+    async function saveAndConnectCloudDb() {
+      if (!isAdminMode) {
+        pushToast("Acceso administrador requerido", "error");
+        return;
+      }
+      const raw = document.getElementById("firebaseDbUrlInput").value;
+      const clean = sanitizeFirebaseBaseUrl(raw);
+      if (!clean) {
+        pushToast("Introduce una URL válida (https://...firebaseio.com)", "error");
+        return;
+      }
+      cloudDbBaseUrl = clean;
+      document.getElementById("firebaseDbUrlInput").value = clean;
+      try {
+        localStorage.setItem(CLOUD_URL_STORAGE_KEY, clean);
+      } catch (_) {}
+
+      connectRealtimeCloudListener();
+      const pulled = await pullFleetFromCloud(false);
+      if (pulled && fleetRecords.length > 0) {
+        await pushFleetToCloud();
+      }
+      pushToast("Nube conectada y sincronizada");
+    }
+
+    async function testCloudDbConnection() {
+      const raw = document.getElementById("firebaseDbUrlInput").value;
+      const clean = sanitizeFirebaseBaseUrl(raw);
+      if (!clean) {
+        pushToast("Introduce una URL válida de Realtime Database", "error");
+        return;
+      }
+      cloudDbBaseUrl = clean;
+      try {
+        localStorage.setItem(CLOUD_URL_STORAGE_KEY, clean);
+      } catch (_) {}
+      await pullFleetFromCloud(true);
+    }
+
+    async function triggerInstantUpdate() {
+      loadLocalCache();
+      renderAllViews();
+      if (buildFleetEndpointUrl(cloudDbBaseUrl)) {
+        await pullFleetFromCloud(true);
+      } else {
+        recordSyncTimestamp("Actualización instantánea");
+        pushToast("Actualización instantánea completada");
+      }
+    }
+
+    /* =====================================================================
+       NATIVE EXCEL (.XLSX / .XLSM), CSV, TSV, TXT & SHEETS PARSER
+       ===================================================================== */
+    function decodeXmlText(str) {
+      return String(str || "")
+        .replace(/&amp;/g, "&")
+        .replace(/&lt;/g, "<")
+        .replace(/&gt;/g, ">")
+        .replace(/&quot;/g, '"')
+        .replace(/&apos;/g, "'")
+        .replace(/&#(\d+);/g, function(_, d) { return String.fromCharCode(parseInt(d, 10)); })
+        .replace(/&#x([0-9a-fA-F]+);/g, function(_, h) { return String.fromCharCode(parseInt(h, 16)); });
+    }
+
+    function excelColLettersToIndex(letters) {
+      let idx = 0;
+      const upper = String(letters || "").toUpperCase();
+      for (let i = 0; i < upper.length; i++) {
+        idx = idx * 26 + (upper.charCodeAt(i) - 64);
+      }
+      return Math.max(0, idx - 1);
+    }
+
+    function extractZipMap(uint8) {
+      const view = new DataView(uint8.buffer, uint8.byteOffset, uint8.byteLength);
+      const map = new Map();
+      let pos = 0;
+
+      while (pos + 30 <= uint8.length) {
+        const sig = view.getUint32(pos, true);
+        if (sig !== 0x04034b50) break;
+        const flags = view.getUint16(pos + 6, true);
+        const method = view.getUint16(pos + 8, true);
+        const compSize = view.getUint32(pos + 18, true);
+        const nameLen = view.getUint16(pos + 26, true);
+        const extraLen = view.getUint16(pos + 28, true);
+        const nameStart = pos + 30;
+        const nameEnd = nameStart + nameLen;
+        if (nameEnd > uint8.length) break;
+
+        const name = new TextDecoder("utf-8").decode(uint8.subarray(nameStart, nameEnd));
+        const dataStart = nameEnd + extraLen;
+        let realCompSize = compSize;
+
+        if (realCompSize === 0 && (flags & 0x08)) {
+          let cursor = dataStart;
+          while (cursor + 4 <= uint8.length) {
+            if (view.getUint32(cursor, true) === 0x08074b50) {
+              realCompSize = cursor - dataStart;
+              break;
+            }
+            cursor++;
+          }
+        }
+
+        const dataEnd = Math.min(uint8.length, dataStart + realCompSize);
+        const slice = uint8.subarray(dataStart, dataEnd);
+
+        if (method === 0) {
+          map.set(name, new Uint8Array(slice));
+        } else if (method === 8 && typeof DecompressionStream === "function") {
+          map.set(name, { deflated: new Uint8Array(slice) });
+        }
+
+        pos = dataEnd + ((flags & 0x08) ? 16 : 0);
+      }
+      return map;
+    }
+
+    async function inflateRawBytes(rawBytes) {
+      const ds = new DecompressionStream("deflate-raw");
+      const writer = ds.writable.getWriter();
+      writer.write(rawBytes);
+      writer.close();
+      const response = new Response(ds.readable);
+      const buffer = await response.arrayBuffer();
+      return new Uint8Array(buffer);
+    }
+
+    async function parseXlsxBufferToMatrix(arrayBuffer) {
+      const bytes = new Uint8Array(arrayBuffer);
+      const zipEntries = extractZipMap(bytes);
+      const textEntries = new Map();
+
+      for (const [entryName, entryVal] of zipEntries.entries()) {
+        if (entryVal instanceof Uint8Array) {
+          textEntries.set(entryName, new TextDecoder("utf-8").decode(entryVal));
+        } else if (entryVal && entryVal.deflated) {
+          try {
+            const inflated = await inflateRawBytes(entryVal.deflated);
+            textEntries.set(entryName, new TextDecoder("utf-8").decode(inflated));
+          } catch (_) {}
+        }
+      }
+
+      const sharedStrings = [];
+      const ssXml = textEntries.get("xl/sharedStrings.xml") || "";
+      if (ssXml) {
+        const siList = ssXml.match(/<si\b[^>]*>[\s\S]*?<\/si>/gi) || [];
+        siList.forEach(function(si) {
+          const tNodes = si.match(/<t\b[^>]*>[\s\S]*?<\/t>/gi) || [];
+          const joined = tNodes.map(function(tn) {
+            return decodeXmlText(tn.replace(/<t\b[^>]*>|<\/t>/gi, ""));
+          }).join("");
+          sharedStrings.push(joined);
+        });
+      }
+
+      const sheetFiles = Array.from(textEntries.keys())
+        .filter(function(k) { return /^xl\/worksheets\/sheet\d+\.xml$/i.test(k); })
+        .sort();
+
+      const rows = [];
+      for (const sf of sheetFiles) {
+        const xml = textEntries.get(sf) || "";
+        const rowNodes = xml.match(/<row\b[^>]*>[\s\S]*?<\/row>/gi) || [];
+        rowNodes.forEach(function(rNode) {
+          const cellArr = [];
+          const cNodes = rNode.match(/<c\b[^>]*>[\s\S]*?<\/c>/gi) || [];
+          cNodes.forEach(function(cNode) {
+            const openTag = (cNode.match(/^<c\b[^>]*>/i) || [""])[0];
+            const refMatch = openTag.match(/\br="([A-Z]+)\d+"/i);
+            const colIdx = refMatch ? excelColLettersToIndex(refMatch[1]) : cellArr.length;
+            const typeMatch = openTag.match(/\bt="([^"]+)"/i);
+            const cType = typeMatch ? typeMatch[1] : "";
+
+            let val = "";
+            if (cType === "inlineStr") {
+              const tMatch = cNode.match(/<t\b[^>]*>[\s\S]*?<\/t>/i);
+              val = tMatch ? decodeXmlText(tMatch[0].replace(/<t\b[^>]*>|<\/t>/gi, "")) : "";
+            } else {
+              const vMatch = cNode.match(/<v\b[^>]*>([\s\S]*?)<\/v>/i);
+              if (vMatch) {
+                const rawV = decodeXmlText(vMatch[1]);
+                if (cType === "s") {
+                  const sIdx = parseInt(rawV, 10);
+                  val = sharedStrings[sIdx] !== undefined ? sharedStrings[sIdx] : rawV;
+                } else {
+                  val = rawV;
+                }
+              }
+            }
+            cellArr[colIdx] = String(val || "").trim();
+          });
+          if (cellArr.some(function(c) { return c && c.length > 0; })) {
+            rows.push(cellArr);
+          }
+        });
+        if (rows.length > 0) break;
+      }
+      return rows;
+    }
+
+    function parseTextRowsToMatrix(rawText) {
+      const txt = String(rawText || "");
+      if (/^\s*<(\?xml|html|table|Workbook|ss:Workbook)/i.test(txt)) {
+        const trList = txt.match(/<tr\b[^>]*>[\s\S]*?<\/tr>/gi) || [];
+        return trList.map(function(tr) {
+          const tdList = tr.match(/<t[dh]\b[^>]*>[\s\S]*?<\/t[dh]>/gi) || [];
+          return tdList.map(function(td) {
+            return decodeXmlText(td.replace(/<[^>]+>/g, "")).trim();
+          });
+        }).filter(function(r) { return r.some(Boolean); });
+      }
+
+      const lines = txt.split(/\r?\n/).map(function(l) { return l.trim(); }).filter(Boolean);
+      return lines.map(function(line) {
+        let delim = ",";
+        if (line.indexOf("\t") !== -1) delim = "\t";
+        else if (line.indexOf(";") !== -1) delim = ";";
+
+        const out = [];
+        let cur = "";
+        let quoted = false;
+        for (let i = 0; i < line.length; i++) {
+          const ch = line[i];
+          if (ch === '"') {
+            if (quoted && line[i + 1] === '"') {
+              cur += '"';
+              i++;
+            } else {
+              quoted = !quoted;
+            }
+          } else if (ch === delim && !quoted) {
+            out.push(cur.trim());
+            cur = "";
+          } else {
+            cur += ch;
+          }
+        }
+        out.push(cur.trim());
+        return out;
+      });
+    }
+
+    function matrixToSortedVehicles(matrix) {
+      if (!Array.isArray(matrix) || matrix.length === 0) return [];
+
+      let plateIdx = 0;
+      let modelIdx = 1;
+      let divIdx = 2;
+      let statusIdx = 3;
+      let startRow = 0;
+
+      const headerRow = (matrix[0] || []).map(function(cell) {
+        return String(cell || "").trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+      });
+
+      const isHeader = headerRow.some(function(h) {
+        return h.indexOf("matric") !== -1 || h.indexOf("vehic") !== -1 || h.indexOf("model") !== -1 || h.indexOf("divis") !== -1 || h.indexOf("secc") !== -1;
+      });
+
+      if (isHeader) {
+        startRow = 1;
+        headerRow.forEach(function(h, i) {
+          if (h.indexOf("matric") !== -1 || h === "plate") plateIdx = i;
+          else if (h.indexOf("vehic") !== -1 || h.indexOf("model") !== -1 || h.indexOf("tipo") !== -1) modelIdx = i;
+          else if (h.indexOf("divis") !== -1 || h.indexOf("secc") !== -1 || h.indexOf("centro") !== -1) divIdx = i;
+          else if (h.indexOf("estad") !== -1 || h.indexOf("status") !== -1 || h.indexOf("situac") !== -1) statusIdx = i;
+        });
+      }
+
+      const uniqueMap = new Map();
+      for (let r = startRow; r < matrix.length; r++) {
+        const cols = matrix[r] || [];
+        const rawPlate = cols[plateIdx] !== undefined ? cols[plateIdx] : cols[0];
+        const plate = normalizePlate(rawPlate);
+        if (!plate || plate.length < 4 || plate === "MATRICULA" || plate === "PLATE") continue;
+
+        const rawModel = cols[modelIdx] !== undefined ? cols[modelIdx] : (cols[1] || "VEHÍCULO");
+        const rawDiv = cols[divIdx] !== undefined ? cols[divIdx] : (cols[2] || "FCC");
+        const rawStatus = cols[statusIdx] !== undefined ? cols[statusIdx] : (cols[3] || "Operativo");
+
+        uniqueMap.set(plate, {
+          plate: plate,
+          model: String(rawModel || "VEHÍCULO").trim().toUpperCase(),
+          division: normalizeDivision(rawDiv),
+          status: normalizeStatus(rawStatus)
+        });
+      }
+
+      return sortFleetInPlace(Array.from(uniqueMap.values()));
+    }
+
+    /* =====================================================================
+       VISUALS & SAURER M-72515 EMBLEM / BACKGROUND
+       ===================================================================== */
+    function initSaurerVisuals() {
+      const emblem = document.getElementById("saurerFrontEmblemImg");
+      const emblemFallback = buildSaurerEmblemSvg();
+      if (emblem) {
+        emblem.onerror = function() {
+          this.onerror = null;
+          this.src = "1000054422.jpg";
+          this.onerror = function() {
+            this.onerror = null;
+            this.src = emblemFallback;
+          };
+        };
+      }
+
+      const bg = document.getElementById("saurerBgPhoto");
+      if (bg) {
+        const bgFallback = buildSaurerBgSvg();
+        bg.style.backgroundImage = `url("1000054422.jpg"), url("1000054425.jpg"), url("${bgFallback}")`;
+      }
+    }
+
+    /* =====================================================================
+       ADMIN AUTHENTICATION (HIDDEN PIN 0484)
+       ===================================================================== */
+    function openAdminPinModal() {
+      document.getElementById("pinCodeInput").value = "";
+      document.getElementById("pinErrorBox").classList.add("hidden");
+      openModal("pinModal");
+      setTimeout(function() {
+        const inp = document.getElementById("pinCodeInput");
+        if (inp) inp.focus();
+      }, 60);
+    }
+
+    function verifyAdminPin(evt) {
+      evt.preventDefault();
+      const entered = String(document.getElementById("pinCodeInput").value || "").trim();
+      if (entered === ADMIN_PIN) {
+        isAdminMode = true;
+        closeModal("pinModal");
+        applyAdminModeUI();
+        pushToast("Acceso administrador activado");
+      } else {
+        document.getElementById("pinErrorBox").classList.remove("hidden");
+        document.getElementById("pinCodeInput").value = "";
+        document.getElementById("pinCodeInput").focus();
+      }
+    }
+
+    function exitAdminMode() {
+      isAdminMode = false;
+      applyAdminModeUI();
+      pushToast("Modo consulta activado", "info");
+    }
+
+    function applyAdminModeUI() {
+      const badge = document.getElementById("roleModeBadge");
+      const openBtn = document.getElementById("openAdminBtn");
+      const exitBtn = document.getElementById("exitAdminBtn");
+      const panel = document.getElementById("adminPanel");
+
+      if (isAdminMode) {
+        badge.textContent = "Admin";
+        badge.classList.add("admin-on");
+        openBtn.classList.add("hidden");
+        exitBtn.classList.remove("hidden");
+        panel.classList.remove("hidden");
+        document.getElementById("firebaseDbUrlInput").value = cloudDbBaseUrl;
+      } else {
+        badge.textContent = "Consulta";
+        badge.classList.remove("admin-on");
+        openBtn.classList.remove("hidden");
+        exitBtn.classList.add("hidden");
+        panel.classList.add("hidden");
+      }
+
+      renderFleetTable();
+    }
+
+    /* =====================================================================
+       UNIFIED SEARCH, LIVE DROPDOWN & MANUAL CAROUSEL
+       ===================================================================== */
+    function getFilteredSortedFleet() {
+      const q = searchQueryText.trim().toLowerCase();
+      const qPlate = normalizePlate(searchQueryText).toLowerCase();
+      const ordered = sortFleetInPlace(fleetRecords.slice());
+
+      if (!q) return ordered;
+
+      return ordered.filter(function(r) {
+        const matchPlate = r.plate.toLowerCase().indexOf(q) !== -1 || (qPlate && r.plate.toLowerCase().indexOf(qPlate) !== -1);
+        const matchModel = r.model.toLowerCase().indexOf(q) !== -1;
+        const matchDivision = r.division.toLowerCase().indexOf(q) !== -1;
+        return matchPlate || matchModel || matchDivision;
+      });
+    }
+
+    function renderSearchDropdown() {
+      const menu = document.getElementById("searchDropdownMenu");
+      if (!menu) return;
+      const matches = getFilteredSortedFleet();
+
+      if (matches.length === 0) {
+        menu.innerHTML = `<div style="padding:12px 14px; font-size:0.78rem; font-weight:800; color:#fca5a5;">Sin coincidencias</div>`;
+        return;
+      }
+
+      menu.innerHTML = matches.map(function(r) {
+        const stCls = r.status === "FleetKaputStatus" ? "st-kaput" : (r.status === "En Taller" ? "st-taller" : "st-operativo");
+        const isSel = normalizePlate(searchQueryText) === r.plate;
+        return `
+          <button type="button" class="suggest-item ${isSel ? "active" : ""}" onclick="selectSearchPlate('${r.plate}')">
+            <div style="min-width:0; display:flex; align-items:center; gap:10px;">
+              <span class="suggest-plate">${r.plate}</span>
+              <span class="suggest-meta">${r.model} • ${r.division}</span>
+            </div>
+            <span class="status-badge ${stCls}" style="flex-shrink:0;">${r.status}</span>
+          </button>
+        `;
+      }).join("");
+    }
+
+    function openSearchDropdown() {
+      renderSearchDropdown();
+      document.getElementById("searchDropdownMenu").classList.remove("hidden");
+    }
+
+    function closeSearchDropdown() {
+      const menu = document.getElementById("searchDropdownMenu");
+      if (menu) menu.classList.add("hidden");
+    }
+
+    function toggleSearchDropdown() {
+      const menu = document.getElementById("searchDropdownMenu");
+      if (!menu) return;
+      if (menu.classList.contains("hidden")) {
+        openSearchDropdown();
+        document.getElementById("unifiedSearchInput").focus();
+      } else {
+        closeSearchDropdown();
+      }
+    }
+
+    function renderManualCarousel() {
+      const track = document.getElementById("carouselTrack");
+      if (!track) return;
+      const matches = getFilteredSortedFleet();
+
+      if (matches.length === 0) {
+        track.innerHTML = `<div style="font-size:0.76rem; color:#94a3b8; padding:6px;">—</div>`;
+        return;
+      }
+
+      track.innerHTML = matches.map(function(r) {
+        const stCls = r.status === "FleetKaputStatus" ? "st-kaput" : (r.status === "En Taller" ? "st-taller" : "st-operativo");
+        const isSel = normalizePlate(searchQueryText) === r.plate;
+        return `
+          <button type="button" class="carousel-card ${isSel ? "selected" : ""}" onclick="selectSearchPlate('${r.plate}')">
+            <div style="display:flex; align-items:center; justify-content:space-between; gap:6px;">
+              <span class="suggest-plate">${r.plate}</span>
+              <span class="status-badge ${stCls}" style="padding:2px 6px; font-size:0.64rem;">${r.status === "FleetKaputStatus" ? "Kaput" : r.status}</span>
+            </div>
+            <div style="font-size:0.74rem; font-weight:800; color:#f8fafc; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${r.model}</div>
+            <div style="font-size:0.68rem; color:#93c5fd; font-weight:700;">${r.division}</div>
+          </button>
+        `;
+      }).join("");
+    }
+
+    function toggleManualCarousel(forceState) {
+      isCarouselVisible = typeof forceState === "boolean" ? forceState : !isCarouselVisible;
+      document.getElementById("manualCarouselPanel").classList.toggle("hidden", !isCarouselVisible);
+      const btn = document.getElementById("carouselToggleBtn");
+      if (btn) {
+        btn.classList.toggle("btn-green", isCarouselVisible);
+        btn.classList.toggle("btn-blue", !isCarouselVisible);
+      }
+      if (isCarouselVisible) {
+        renderManualCarousel();
+      }
+    }
+
+    function scrollCarousel(direction) {
+      const track = document.getElementById("carouselTrack");
+      if (track) track.scrollBy({ left: direction * 420, behavior: "smooth" });
+    }
+
+    function selectSearchPlate(plateCode) {
+      searchQueryText = plateCode;
+      document.getElementById("unifiedSearchInput").value = plateCode;
+      document.getElementById("clearSearchBtn").classList.add("visible");
+      closeSearchDropdown();
+      if (isCarouselVisible) renderManualCarousel();
+      renderFleetTable();
+    }
+
+    function handleUnifiedSearchInput() {
+      searchQueryText = document.getElementById("unifiedSearchInput").value;
+      document.getElementById("clearSearchBtn").classList.toggle("visible", searchQueryText.trim().length > 0);
+      openSearchDropdown();
+      if (isCarouselVisible) renderManualCarousel();
+      renderFleetTable();
+    }
+
+    function clearUnifiedSearch() {
+      searchQueryText = "";
+      document.getElementById("unifiedSearchInput").value = "";
+      document.getElementById("clearSearchBtn").classList.remove("visible");
+      closeSearchDropdown();
+      if (isCarouselVisible) renderManualCarousel();
+      renderFleetTable();
+    }
+
+    /* =====================================================================
+       FLEET TABLE, STATUS BADGES & DETAIL MODAL
+       ===================================================================== */
+    function refreshSmartBcnCounts() {
+      let kaput = 0;
+      let workshop = 0;
+      fleetRecords.forEach(function(r) {
+        if (r.status === "FleetKaputStatus") kaput++;
+        else if (r.status === "En Taller") workshop++;
+      });
+      document.getElementById("kaputCountBadge").textContent = String(kaput);
+      document.getElementById("workshopCountBadge").textContent = String(workshop);
+    }
+
+    async function updateVehicleStatusInline(plateCode, nextStatus) {
+      if (!isAdminMode) {
+        pushToast("Acceso administrador requerido", "error");
+        return;
+      }
+      const rec = fleetRecords.find(function(r) { return r.plate === plateCode; });
+      if (!rec) return;
+      rec.status = normalizeStatus(nextStatus);
+      saveLocalCache();
+      recordSyncTimestamp("Estado actualizado");
+      renderAllViews();
+      pushToast(`${plateCode} → ${rec.status}`);
+      await pushFleetToCloud();
+    }
+
+    function openVehicleDetail(plateCode) {
+      const rec = fleetRecords.find(function(r) { return r.plate === plateCode; });
+      if (!rec) return;
+      activeDetailPlate = rec.plate;
+      document.getElementById("detailPlateHeading").textContent = `Matrícula ${rec.plate}`;
+      document.getElementById("detailModelValue").textContent = rec.model;
+      document.getElementById("detailDivisionValue").textContent = rec.division;
+      document.getElementById("detailStatusValue").textContent = rec.status;
+
+      const msg = `FleetTrackDrivers • Matrícula: ${rec.plate} | Vehículo: ${rec.model} | División: ${rec.division} | Estado: ${rec.status}`;
+      document.getElementById("detailWhatsappBtn").href = "https://wa.me/?text=" + encodeURIComponent(msg);
+      openModal("vehicleDetailModal");
+    }
+
+    function copyDetailInfo() {
+      const rec = fleetRecords.find(function(r) { return r.plate === activeDetailPlate; });
+      if (!rec) return;
+      copyToClipboardSafe(`${rec.plate} | ${rec.model} | ${rec.division} | ${rec.status}`, "Ficha copiada");
+    }
+
+    function renderFleetTable() {
+      refreshSmartBcnCounts();
+      const rows = getFilteredSortedFleet();
+      const hasQuery = searchQueryText.trim().length > 0;
+
+      document.getElementById("fleetCounterLabel").textContent = `${rows.length} / ${fleetRecords.length} vehículos`;
+      document.getElementById("resetFilterBtn").classList.toggle("hidden", !hasQuery);
+
+      const tbody = document.getElementById("fleetTableBody");
+      const cardsWrap = document.getElementById("fleetMobileCards");
+
+      if (rows.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; padding:24px; font-weight:800; color:#64748b;">No hay vehículos coincidentes</td></tr>`;
+        cardsWrap.innerHTML = `<div class="mobile-card" style="text-align:center; font-weight:800; color:#64748b;">No hay vehículos coincidentes</div>`;
+        return;
+      }
+
+      tbody.innerHTML = rows.map(function(r) {
+        const stCls = r.status === "FleetKaputStatus" ? "st-kaput" : (r.status === "En Taller" ? "st-taller" : "st-operativo");
+        const statusCell = isAdminMode
+          ? `<div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+               <span class="status-badge ${stCls}">${r.status}</span>
+               <select class="status-select-admin" aria-label="Estado ${r.plate}" onchange="updateVehicleStatusInline('${r.plate}', this.value)">
+                 <option value="Operativo" ${r.status === "Operativo" ? "selected" : ""}>Operativo</option>
+                 <option value="FleetKaputStatus" ${r.status === "FleetKaputStatus" ? "selected" : ""}>FleetKaputStatus</option>
+                 <option value="En Taller" ${r.status === "En Taller" ? "selected" : ""}>En Taller</option>
+               </select>
+             </div>`
+          : `<span class="status-badge ${stCls}">${r.status}</span>`;
+
+        return `
+          <tr>
+            <td style="white-space:nowrap;">
+              <button type="button" class="plate-trigger-btn" title="Ver ficha de ${r.plate}" onclick="openVehicleDetail('${r.plate}')">
+                <span class="plate-tag-eu"><span>★</span><span>E</span></span>
+                <span class="plate-tag-num">${r.plate}</span>
+              </button>
+            </td>
+            <td style="font-weight:800; color:#0f172a;">${r.model}</td>
+            <td><span class="division-pill">${r.division}</span></td>
+            <td>${statusCell}</td>
+          </tr>
+        `;
+      }).join("");
+
+      cardsWrap.innerHTML = rows.map(function(r) {
+        const stCls = r.status === "FleetKaputStatus" ? "st-kaput" : (r.status === "En Taller" ? "st-taller" : "st-operativo");
+        const mobileAdminSel = isAdminMode
+          ? `<select class="status-select-admin" aria-label="Estado ${r.plate}" onchange="updateVehicleStatusInline('${r.plate}', this.value)">
+               <option value="Operativo" ${r.status === "Operativo" ? "selected" : ""}>Operativo</option>
+               <option value="FleetKaputStatus" ${r.status === "FleetKaputStatus" ? "selected" : ""}>FleetKaputStatus</option>
+               <option value="En Taller" ${r.status === "En Taller" ? "selected" : ""}>En Taller</option>
+             </select>`
+          : "";
+
+        return `
+          <article class="mobile-card">
+            <div style="display:flex; align-items:center; justify-content:space-between; gap:8px;">
+              <button type="button" class="plate-trigger-btn" onclick="openVehicleDetail('${r.plate}')">
+                <span class="plate-tag-eu"><span>★</span><span>E</span></span>
+                <span class="plate-tag-num">${r.plate}</span>
+              </button>
+              <span class="division-pill">${r.division}</span>
+            </div>
+            <div style="font-size:0.94rem; font-weight:900; color:#0f172a;">${r.model}</div>
+            <div style="display:flex; align-items:center; justify-content:space-between; gap:8px; flex-wrap:wrap;">
+              <span class="status-badge ${stCls}">${r.status}</span>
+              ${mobileAdminSel}
+            </div>
+          </article>
+        `;
+      }).join("");
+    }
+
+    /* =====================================================================
+       ADMIN IMPORT & SINGLE VEHICLE CRUD + AUTO-SORTING
+       ===================================================================== */
+    function openImportModal() {
+      if (!isAdminMode) {
+        pushToast("Acceso administrador requerido", "error");
+        return;
+      }
+      stagedImportList = [];
+      document.getElementById("importFileInput").value = "";
+      document.getElementById("importPasteTextarea").value = "";
+      document.getElementById("importModeSelect").value = "merge";
+      document.getElementById("stagedCountText").textContent = "0 vehículos listos";
+      document.getElementById("importPreviewList").classList.add("hidden");
+      document.getElementById("importPreviewList").textContent = "";
+      document.getElementById("applyImportBtn").disabled = true;
+      openModal("importModal");
+    }
+
+    function setStagedImport(items) {
+      stagedImportList = sortFleetInPlace(items.slice());
+      const countLabel = document.getElementById("stagedCountText");
+      const previewBox = document.getElementById("importPreviewList");
+      const btn = document.getElementById("applyImportBtn");
+
+      countLabel.textContent = `${stagedImportList.length} vehículos listos`;
+      btn.disabled = stagedImportList.length === 0;
+
+      if (stagedImportList.length > 0) {
+        previewBox.classList.remove("hidden");
+        previewBox.textContent = stagedImportList.slice(0, 12).map(function(row) {
+          return `${row.plate} | ${row.model} | ${row.division} | ${row.status}`;
+        }).join("\n") + (stagedImportList.length > 12 ? `\n... (+${stagedImportList.length - 12} más)` : "");
+      } else {
+        previewBox.classList.add("hidden");
+        previewBox.textContent = "";
+      }
+    }
+
+    function stageImportRows() {
+      const raw = document.getElementById("importPasteTextarea").value;
+      const matrix = parseTextRowsToMatrix(raw);
+      setStagedImport(matrixToSortedVehicles(matrix));
+    }
+
+    async function readImportFile(evt) {
+      const file = evt.target.files && evt.target.files[0];
+      if (!file) return;
+
+      const lower = String(file.name || "").toLowerCase();
+      try {
+        if (lower.endsWith(".xlsx") || lower.endsWith(".xlsm")) {
+          const buf = await file.arrayBuffer();
+          const matrix = await parseXlsxBufferToMatrix(buf);
+          const parsed = matrixToSortedVehicles(matrix);
+          document.getElementById("importPasteTextarea").value = parsed.map(function(item) {
+            return `${item.plate}\t${item.model}\t${item.division}\t${item.status}`;
+          }).join("\n");
+          setStagedImport(parsed);
+          if (parsed.length === 0) {
+            pushToast("No se detectaron matrículas en el .xlsx", "info");
+          }
+          return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          const txt = String(e.target.result || "");
+          document.getElementById("importPasteTextarea").value = txt;
+          const matrix = parseTextRowsToMatrix(txt);
+          setStagedImport(matrixToSortedVehicles(matrix));
+        };
+        reader.readAsText(file, "UTF-8");
+      } catch (_) {
+        pushToast("No se pudo leer el archivo", "error");
+      }
+    }
+
+    async function applyImportedRows() {
+      if (!isAdminMode || stagedImportList.length === 0) return;
+      const mode = document.getElementById("importModeSelect").value;
+
+      if (mode === "replace") {
+        fleetRecords = stagedImportList.map(function(item) {
+          return {
+            plate: item.plate,
+            model: item.model,
+            division: item.division,
+            status: item.status
+          };
+        });
+      } else {
+        const map = new Map();
+        fleetRecords.forEach(function(r) { map.set(r.plate, r); });
+        stagedImportList.forEach(function(item) {
+          const prev = map.get(item.plate) || {};
+          map.set(item.plate, {
+            plate: item.plate,
+            model: item.model || prev.model || "VEHÍCULO",
+            division: item.division || prev.division || "FCC",
+            status: item.status || prev.status || "Operativo"
+          });
+        });
+        fleetRecords = Array.from(map.values());
+      }
+
+      saveLocalCache();
+      recordSyncTimestamp("Importación ordenada");
+      closeModal("importModal");
+      renderAllViews();
+      pushToast(`Importados y ordenados ${stagedImportList.length} vehículos`);
+      await pushFleetToCloud();
+    }
+
+    function openAddVehicleModal() {
+      if (!isAdminMode) {
+        pushToast("Acceso administrador requerido", "error");
+        return;
+      }
+      document.getElementById("formPlateInput").value = "";
+      document.getElementById("formDivisionInput").value = "FCC";
+      document.getElementById("formModelInput").value = "";
+      document.getElementById("formStatusSelect").value = "Operativo";
+      openModal("vehicleFormModal");
+    }
+
+    async function saveVehicleForm(evt) {
+      evt.preventDefault();
+      if (!isAdminMode) return;
+
+      const plate = normalizePlate(document.getElementById("formPlateInput").value);
+      const division = normalizeDivision(document.getElementById("formDivisionInput").value);
+      const model = String(document.getElementById("formModelInput").value || "").trim().toUpperCase();
+      const status = normalizeStatus(document.getElementById("formStatusSelect").value);
+
+      if (!plate || !model) return;
+
+      const entry = { plate: plate, model: model, division: division, status: status };
+      const idx = fleetRecords.findIndex(function(r) { return r.plate === plate; });
+      if (idx >= 0) fleetRecords[idx] = entry;
+      else fleetRecords.push(entry);
+
+      saveLocalCache();
+      recordSyncTimestamp("Vehículo guardado");
+      closeModal("vehicleFormModal");
+      renderAllViews();
+      pushToast(`${plate} guardado y ordenado`);
+      await pushFleetToCloud();
+    }
+
+    async function restoreSeedFleet() {
+      if (!isAdminMode) {
+        pushToast("Acceso administrador requerido", "error");
+        return;
+      }
+      fleetRecords = sortFleetInPlace(FLEET_SEED.map(function(r) { return Object.assign({}, r); }));
+      saveLocalCache();
+      recordSyncTimestamp("Base restaurada");
+      renderAllViews();
+      pushToast("Base restaurada y ordenada");
+      await pushFleetToCloud();
+    }
+
+    async function clearAdminDatabase() {
+      if (!isAdminMode) {
+        pushToast("Acceso administrador requerido", "error");
+        return;
+      }
+      fleetRecords = [];
+      saveLocalCache();
+      recordSyncTimestamp("Base vaciada");
+      renderAllViews();
+      pushToast("Base vaciada", "info");
+      await pushFleetToCloud();
+    }
+
+    /* =====================================================================
+       SHARE MODAL (WHATSAPP, EMAIL, COPY, SHORTCUT GUIDE)
+       ===================================================================== */
+    function openShareModal() {
+      const url = (window.location && window.location.href && window.location.href !== "about:blank")
+        ? window.location.href
+        : "FleetTrackDrivers.html";
+      const total = fleetRecords.length;
+      const op = fleetRecords.filter(function(r) { return r.status === "Operativo"; }).length;
+      const kaput = fleetRecords.filter(function(r) { return r.status === "FleetKaputStatus"; });
+      const workshop = fleetRecords.filter(function(r) { return r.status === "En Taller"; });
+
+      const summary = [
+        "FleetTrackDrivers • Control de Flota (FFZF)",
+        `Total: ${total} | Operativos: ${op}`,
+        `FleetKaputStatus (${kaput.length}): ${kaput.map(function(x) { return x.plate; }).join(", ") || "Ninguno"}`,
+        `En Taller (${workshop.length}): ${workshop.map(function(x) { return x.plate; }).join(", ") || "Ninguno"}`,
+        `Enlace: ${url}`
+      ].join("\n");
+
+      document.getElementById("shareLinkInput").value = url;
+      document.getElementById("shareSummaryTextarea").value = summary;
+      document.getElementById("shareWhatsappBtn").href = "https://wa.me/?text=" + encodeURIComponent(summary);
+      document.getElementById("shareEmailBtn").href = "mailto:?subject=" + encodeURIComponent("FleetTrackDrivers") + "&body=" + encodeURIComponent(summary);
+      openModal("shareModal");
+    }
+
+    function copyShareUrl() {
+      copyToClipboardSafe(document.getElementById("shareLinkInput").value, "Enlace copiado");
+    }
+
+    function copyShareSummary() {
+      copyToClipboardSafe(document.getElementById("shareSummaryTextarea").value, "Resumen copiado");
+    }
+
+    function triggerShortcutInstall() {
+      const box = document.getElementById("shortcutGuideBox");
+      if (box) {
+        box.style.borderColor = "#fbbf24";
+        box.style.background = "rgba(245, 158, 11, 0.2)";
+      }
+      pushToast("Añade a pantalla de inicio desde el menú del navegador", "info");
+    }
+
+    function shareViaDevice() {
+      const summary = document.getElementById("shareSummaryTextarea").value;
+      const url = document.getElementById("shareLinkInput").value;
+      if (navigator && typeof navigator.share === "function") {
+        try {
+          const p = navigator.share({ title: "FleetTrackDrivers", text: summary, url: url });
+          if (p && typeof p.catch === "function") {
+            p.catch(function() { copyToClipboardSafe(summary, "Resumen copiado"); });
+          }
+          return;
+        } catch (_) {}
+      }
+      copyToClipboardSafe(summary, "Resumen copiado");
+    }
+
+    /* =====================================================================
+       BOOT
+       ===================================================================== */
+    function renderAllViews() {
+      renderSearchDropdown();
+      if (isCarouselVisible) renderManualCarousel();
+      renderFleetTable();
+    }
+
+    document.addEventListener("click", function(evt) {
+      const shell = document.getElementById("unifiedSearchShell");
+      const btn = evt.target.closest("button");
+      const isToggleBtn = btn && btn.textContent && btn.textContent.indexOf("Desplegable") !== -1;
+      if (shell && !shell.contains(evt.target) && !isToggleBtn) {
+        closeSearchDropdown();
+      }
+    });
+
+    (function bootFleetTrackDrivers() {
+      initSaurerVisuals();
+      loadLocalCache();
+
+      try {
+        const savedUrl = localStorage.getItem(CLOUD_URL_STORAGE_KEY);
+        if (savedUrl) {
+          cloudDbBaseUrl = sanitizeFirebaseBaseUrl(savedUrl);
+        }
+        const savedClock = localStorage.getItem(LAST_SYNC_STORAGE_KEY);
+        if (savedClock) {
+          document.getElementById("lastSyncClock").textContent = savedClock;
+        } else {
+          recordSyncTimestamp("Listo");
+        }
+      } catch (_) {
+        recordSyncTimestamp("Listo");
+      }
+
+      updateSyncBadgeUI(false, cloudDbBaseUrl ? "Conectando nube..." : "Caché local");
+      applyAdminModeUI();
+      renderAllViews();
+
+      if (cloudDbBaseUrl) {
+        connectRealtimeCloudListener();
+        pullFleetFromCloud(false);
+      }
+    })();
+  </script>
+</body>
+</html>
+```
