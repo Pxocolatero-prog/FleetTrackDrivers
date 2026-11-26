@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -52,12 +53,13 @@
     }
 
     /* =====================================================================
-       HISTORICAL SAURER OCHSNER M-72515 DARK GLASS BACKGROUND
+       DARK GLASS BACKGROUND (WITHOUT HEADER TITLE PHOTO)
        ===================================================================== */
     .saurer-bg-photo {
       position: fixed;
       inset: 0;
       z-index: -2;
+      background-color: #070d19;
       background-size: cover;
       background-position: center 40%;
       background-repeat: no-repeat;
@@ -93,7 +95,7 @@
     }
 
     /* =====================================================================
-       TOP BAR & CONDITIONED FRONT SAURER M-72515 BADGE
+       TOP BAR & TITLE BADGE (1795640388471.jpg ONLY IN TITLE)
        ===================================================================== */
     .topbar {
       position: sticky;
@@ -134,24 +136,9 @@
       width: 100%;
       height: 100%;
       object-fit: cover;
-      object-position: center 43%;
-      filter: contrast(1.15) brightness(1.06) saturate(1.08);
+      object-position: center;
+      filter: contrast(1.08) brightness(1.04) saturate(1.05);
       display: block;
-    }
-
-    .emblem-plate {
-      position: absolute;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background: rgba(2, 6, 23, 0.88);
-      color: #f8fafc;
-      font-family: var(--font-mono);
-      font-size: 0.56rem;
-      font-weight: 800;
-      text-align: center;
-      padding: 1px 0;
-      letter-spacing: 0.04em;
     }
 
     .app-name {
@@ -951,7 +938,7 @@
   </style>
 </head>
 <body>
-  <!-- Integrated Saurer Ochsner M-72515 Historical Dark Glass Background -->
+  <!-- Dark Glass Background (Without Title Image) -->
   <div id="saurerBgPhoto" class="saurer-bg-photo"></div>
   <div class="saurer-bg-scrim"></div>
 
@@ -961,25 +948,24 @@
   <header class="topbar glass-box">
     <div class="wrap topbar-inner">
       <div class="brand-left">
-        <div class="emblem-frame" title="Saurer M-72515">
-          <img id="saurerFrontEmblemImg" src="1000054422_2.jpg" alt="Saurer M-72515" />
-          <span class="emblem-plate">M-72515</span>
+        <div class="emblem-frame" title="FleetTrackDrivers">
+          <img id="saurerFrontEmblemImg" src="1795640388471.jpg" alt="FleetTrackDrivers" />
         </div>
         <div>
           <h1 class="app-name">FleetTrackDrivers</h1>
           <div class="status-row">
             <span id="cloudSyncBadge" class="sync-pill">
               <span class="sync-dot"></span>
-              <span id="cloudSyncLabel">Caché local</span>
+              <span id="cloudSyncLabel">Conectando nube...</span>
             </span>
             <span id="roleModeBadge" class="mode-pill">Consulta</span>
-            <span id="lastSyncClock" class="clock-text">Sin sincronizar</span>
+            <span id="lastSyncClock" class="clock-text">Auto 4h</span>
           </div>
         </div>
       </div>
 
       <div class="header-btns">
-        <button type="button" class="btn btn-green" onclick="triggerInstantUpdate()">⚡ Actualización Instantánea</button>
+        <button type="button" class="btn btn-green" onclick="triggerInstantUpdate()">⚡ Sincronizar ahora</button>
         <button type="button" class="btn btn-blue" onclick="openShareModal()">Compartir</button>
         <button type="button" id="openAdminBtn" class="btn btn-amber" onclick="openAdminPinModal()">Acceso Admin</button>
         <button type="button" id="exitAdminBtn" class="btn btn-red hidden" onclick="exitAdminMode()">Salir Admin</button>
@@ -1011,7 +997,7 @@
               id="firebaseDbUrlInput"
               class="field-input"
               style="font-family:var(--font-mono); font-size:0.78rem;"
-              placeholder="https://tu-proyecto-default-rtdb.firebaseio.com"
+              placeholder="https://fleettrackdrivers-default-rtdb.europe-west1.firebasedatabase.app"
             />
             <button type="button" class="btn btn-blue" onclick="saveAndConnectCloudDb()">Guardar y Conectar</button>
             <button type="button" class="btn btn-dark" onclick="testCloudDbConnection()">Probar Conexión</button>
@@ -1201,7 +1187,7 @@
         <div>
           <label class="field-label" for="importPasteTextarea">Pegar filas (MATRÍCULA, VEHÍCULO, DIVISIÓN, ESTADO)</label>
           <textarea id="importPasteTextarea" rows="4" class="field-textarea" style="font-family:var(--font-mono); font-size:0.75rem;" oninput="stageImportRows()" placeholder="0485LCV	OPEL COMBO	Fuentes	Operativo
-0485MBT	DAILY CL CANGREJO	FCC	Operativo"></textarea>
+0485MBT	DAILY CL CANGREJO	FCC	En Taller"></textarea>
         </div>
 
         <div style="display:flex; align-items:center; justify-content:space-between; gap:8px; flex-wrap:wrap;">
@@ -1245,7 +1231,7 @@
           <label class="field-label" for="formStatusSelect">Estado</label>
           <select id="formStatusSelect" class="field-select">
             <option value="Operativo">Operativo</option>
-            <option value="FleetKaputStatus">FleetKaputStatus</option>
+            <option value="FleetKaputStatus">Averiado (FleetKaputStatus)</option>
             <option value="En Taller">En Taller</option>
           </select>
         </div>
@@ -1294,6 +1280,10 @@
        CONSTANTS & PRELOADED FFZF FLEET SEED
        ===================================================================== */
     const ADMIN_PIN = "0484";
+    const DEFAULT_FIREBASE_DB_URL = "https://fleettrackdrivers-default-rtdb.europe-west1.firebasedatabase.app";
+    const SMARTBCN_KAPUT_URL = "https://smartbcn.fcc.es/SBCNC/FleetStatus/?nomesAvariats=true&centre=FFZF";
+    const SMARTBCN_WORKSHOP_URL = "https://smartbcn.fcc.es/SBCNC/FleetStatus/?centre=FFZF";
+    const AUTO_SYNC_INTERVAL_MS = 4 * 60 * 60 * 1000;
     const FLEET_STORAGE_KEY = "FleetTrackDrivers_fleet_v5";
     const CLOUD_URL_STORAGE_KEY = "FleetTrackDrivers_rtdb_url_v5";
     const LAST_SYNC_STORAGE_KEY = "FleetTrackDrivers_last_sync_v5";
@@ -1309,7 +1299,7 @@
       { plate: "0195LWF", model: "FURGON REPARACIONES", division: "FCC", status: "Operativo" },
       { plate: "0203LWF", model: "FURGON REPARACIONES", division: "FCC", status: "Operativo" },
       { plate: "0240MJK", model: "TOYOTA PROACE ELEC", division: "Fuentes", status: "Operativo" },
-      { plate: "0247JSS", model: "CAPELOTTO 3EJES", division: "Alcantarillado", status: "FleetKaputStatus" },
+      { plate: "0247JSS", model: "CAPELOTTO 3EJES", division: "Alcantarillado", status: "Averiado" },
       { plate: "0280LHS", model: "KANGOO", division: "Obras", status: "Operativo" },
       { plate: "0310LBT", model: "OPEL COMBO", division: "Colegios", status: "Operativo" },
       { plate: "0427MFV", model: "TOYOTA PROACE ELEC", division: "Fuentes", status: "Operativo" },
@@ -1329,7 +1319,7 @@
       { plate: "1220MFB", model: "CUBA 2 EJES URO", division: "FCC", status: "Operativo" },
       { plate: "1240KHH", model: "ISUZU", division: "Fuentes", status: "Operativo" },
       { plate: "1406JYC", model: "FIAT DUCATO", division: "Pintadas", status: "Operativo" },
-      { plate: "1487MHW", model: "BICO ELECTRICO", division: "FCC", status: "FleetKaputStatus" },
+      { plate: "1487MHW", model: "BICO ELECTRICO", division: "FCC", status: "Averiado" },
       { plate: "1566LZP", model: "REGADOR 3 EJES 14M", division: "FCC", status: "Operativo" },
       { plate: "1674MZC", model: "POLIVALENTE", division: "FCC", status: "Operativo" },
       { plate: "1745MDH", model: "AMPLIROLL 3 EJES", division: "FCC", status: "Operativo" },
@@ -1359,56 +1349,6 @@
     ];
 
     /* =====================================================================
-       VECTOR FALLBACKS FOR SAURER M-72515 EMBLEM & BACKGROUND
-       ===================================================================== */
-    function buildSaurerEmblemSvg() {
-      const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128">
-        <defs>
-          <linearGradient id="cabGrad" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stop-color="#94a3b8"/>
-            <stop offset="55%" stop-color="#f8fafc"/>
-            <stop offset="100%" stop-color="#cbd5e1"/>
-          </linearGradient>
-        </defs>
-        <rect width="128" height="128" rx="20" fill="#1e3a8a"/>
-        <rect x="28" y="16" width="72" height="38" rx="10" fill="url(#cabGrad)" stroke="#0f172a" stroke-width="3.5"/>
-        <rect x="35" y="23" width="26" height="19" rx="3" fill="#1e293b"/>
-        <rect x="67" y="23" width="26" height="19" rx="3" fill="#1e293b"/>
-        <path d="M16 70 Q22 50 42 50 L86 50 Q106 50 112 70 L112 92 L16 92 Z" fill="#f8fafc" stroke="#0f172a" stroke-width="3.5"/>
-        <rect x="46" y="46" width="36" height="46" rx="6" fill="#0f172a"/>
-        <line x1="64" y1="46" x2="64" y2="92" stroke="#cbd5e1" stroke-width="2.5"/>
-        <circle cx="28" cy="72" r="9" fill="#fef08a" stroke="#0f172a" stroke-width="2.5"/>
-        <circle cx="100" cy="72" r="9" fill="#fef08a" stroke="#0f172a" stroke-width="2.5"/>
-        <rect x="14" y="90" width="100" height="11" rx="3" fill="#0f172a"/>
-      </svg>`;
-      return "data:image/svg+xml;charset=UTF-8," + encodeURIComponent(svg);
-    }
-
-    function buildSaurerBgSvg() {
-      const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 810">
-        <defs>
-          <linearGradient id="bgGrad" x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0%" stop-color="#071024"/>
-            <stop offset="55%" stop-color="#10254b"/>
-            <stop offset="100%" stop-color="#072b22"/>
-          </linearGradient>
-        </defs>
-        <rect width="1440" height="810" fill="url(#bgGrad)"/>
-        <g transform="translate(150,210)" opacity="0.22" stroke="#e2e8f0" stroke-width="4" fill="none">
-          <rect x="260" y="35" width="520" height="245" rx="20" fill="#94a3b8" fill-opacity="0.22"/>
-          <path d="M 780 50 C 865 78, 880 190, 825 280 L 780 280 Z" fill="#64748b" fill-opacity="0.22"/>
-          <rect x="115" y="75" width="145" height="205" rx="14" fill="#cbd5e1" fill-opacity="0.22"/>
-          <path d="M 20 168 L 115 145 L 115 280 L 20 280 Z" fill="#f8fafc" fill-opacity="0.2"/>
-          <circle cx="132" cy="296" r="58" fill="#0f172a"/>
-          <circle cx="675" cy="296" r="58" fill="#0f172a"/>
-        </g>
-        <rect x="64" y="656" width="320" height="44" rx="7" fill="#ffffff" stroke="#0f172a" stroke-width="4"/>
-        <text x="224" y="686" text-anchor="middle" fill="#0f172a" font-family="monospace" font-weight="900" font-size="24" letter-spacing="4">M ·· 72515</text>
-      </svg>`;
-      return "data:image/svg+xml;charset=UTF-8," + encodeURIComponent(svg);
-    }
-
-    /* =====================================================================
        APPLICATION STATE & FIREBASE REALTIME DATABASE STREAM
        ===================================================================== */
     let fleetRecords = [];
@@ -1417,9 +1357,10 @@
     let isCarouselVisible = false;
     let stagedImportList = [];
     let activeDetailPlate = "";
-    let cloudDbBaseUrl = "";
+    let cloudDbBaseUrl = DEFAULT_FIREBASE_DB_URL;
     let cloudStreamSource = null;
     let isCloudConnected = false;
+    let fourHourTimerId = null;
 
     function normalizePlate(raw) {
       return String(raw || "").trim().toUpperCase().replace(/[^A-Z0-9]/g, "");
@@ -1480,9 +1421,26 @@
     }
 
     function normalizeStatus(raw) {
-      const low = String(raw || "").trim().toLowerCase();
-      if (low.includes("kaput") || low.includes("aver")) return "FleetKaputStatus";
-      if (low.includes("taller") || low.includes("workshop")) return "En Taller";
+      const low = String(raw || "").trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+      if (!low) return "";
+      if (
+        low.includes("kaput") ||
+        low.includes("aver") ||
+        low.includes("baja") ||
+        low.includes("inmovil") ||
+        low.includes("fuera")
+      ) {
+        return "Averiado";
+      }
+      if (
+        low.includes("taller") ||
+        low.includes("workshop") ||
+        low.includes("repar") ||
+        low.includes("mecan") ||
+        low.includes("itv")
+      ) {
+        return "En Taller";
+      }
       return "Operativo";
     }
 
@@ -1544,8 +1502,10 @@
 
     function recordSyncTimestamp(label) {
       const now = new Date();
-      const timeStr = now.toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit", second: "2-digit" });
-      const full = label ? `${timeStr} • ${label}` : timeStr;
+      const nextDate = new Date(now.getTime() + AUTO_SYNC_INTERVAL_MS);
+      const timeStr = now.toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit" });
+      const nextStr = nextDate.toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit" });
+      const full = label ? `${timeStr} (${label}) • Próx. 4h: ${nextStr}` : `${timeStr} • Próx. 4h: ${nextStr}`;
       document.getElementById("lastSyncClock").textContent = full;
       try {
         localStorage.setItem(LAST_SYNC_STORAGE_KEY, full);
@@ -1573,6 +1533,56 @@
     }
 
     /* =====================================================================
+       SMARTBCN KAPUT / WORKSHOP REMOTE FETCH & MERGE ON SYNC
+       ===================================================================== */
+    function extractKaputPlatesFromHtml(htmlText) {
+      const matches = String(htmlText || "").toUpperCase().match(/\b\d{4}[A-Z]{3}\b/g) || [];
+      return Array.from(new Set(matches.map(normalizePlate)));
+    }
+
+    async function tryFetchSmartBcnKaputPlates() {
+      const candidates = [
+        SMARTBCN_KAPUT_URL,
+        "https://api.allorigins.win/raw?url=" + encodeURIComponent(SMARTBCN_KAPUT_URL)
+      ];
+
+      for (let i = 0; i < candidates.length; i++) {
+        try {
+          const resp = await fetch(candidates[i], { cache: "no-store" });
+          if (!resp.ok) continue;
+          const txt = await resp.text();
+          if (txt && txt.toLowerCase().indexOf("fleetstatus") !== -1) {
+            return extractKaputPlatesFromHtml(txt);
+          }
+        } catch (_) {}
+      }
+      return null;
+    }
+
+    async function syncKaputPlatesFromSmartBcn() {
+      const remoteKaputPlates = await tryFetchSmartBcnKaputPlates();
+      if (!Array.isArray(remoteKaputPlates)) {
+        return { fetched: false, updated: 0 };
+      }
+      const kaputSet = new Set(remoteKaputPlates);
+      let updated = 0;
+
+      fleetRecords.forEach(function(rec) {
+        if (kaputSet.has(rec.plate)) {
+          if (rec.status !== "Averiado") {
+            rec.status = "Averiado";
+            updated++;
+          }
+        } else if (rec.status === "Averiado") {
+          rec.status = "Operativo";
+          updated++;
+        }
+      });
+
+      return { fetched: true, updated: updated };
+    }
+
+    /* =====================================================================
        LOCALSTORAGE CACHE & CLOUD SYNC (FIREBASE REALTIME DATABASE)
        ===================================================================== */
     function saveLocalCache() {
@@ -1593,7 +1603,7 @@
                 plate: normalizePlate(row.plate),
                 model: String(row.model || "").trim().toUpperCase(),
                 division: normalizeDivision(row.division),
-                status: normalizeStatus(row.status)
+                status: normalizeStatus(row.status) || "Operativo"
               };
             }).filter(function(row) { return row.plate.length >= 4; });
             sortFleetInPlace(fleetRecords);
@@ -1615,14 +1625,14 @@
           plate: normalizePlate(item.plate),
           model: String(item.model || "VEHÍCULO").trim().toUpperCase(),
           division: normalizeDivision(item.division),
-          status: normalizeStatus(item.status)
+          status: normalizeStatus(item.status) || "Operativo"
         };
       }).filter(function(item) { return item.plate.length >= 4; });
 
       return sortFleetInPlace(cleaned);
     }
 
-    async function pullFleetFromCloud(showFeedback) {
+    async function pullFleetFromCloud(showFeedback, syncSourceTag) {
       const endpoint = buildFleetEndpointUrl(cloudDbBaseUrl);
       if (!endpoint) {
         updateSyncBadgeUI(false, "Caché local");
@@ -1639,20 +1649,29 @@
         const parsedList = parseCloudPayloadToList(data);
         if (parsedList && parsedList.length > 0) {
           fleetRecords = parsedList;
-          saveLocalCache();
-          updateSyncBadgeUI(true, "Nube sincronizada");
-          recordSyncTimestamp("Nube RTDB");
-          renderAllViews();
-          if (showFeedback) pushToast("Flota actualizada desde la nube");
-          return true;
         }
-        updateSyncBadgeUI(true, "Nube conectada");
-        recordSyncTimestamp("Nube vacía");
-        if (showFeedback) pushToast("Nube conectada (sin registros aún)", "info");
+        const kaputSync = await syncKaputPlatesFromSmartBcn();
+        saveLocalCache();
+        updateSyncBadgeUI(true, "Nube sincronizada");
+        recordSyncTimestamp(syncSourceTag || "Nube RTDB");
+        renderAllViews();
+        if (kaputSync.fetched && kaputSync.updated > 0) {
+          await pushFleetToCloud();
+        }
+        if (showFeedback) {
+          pushToast(kaputSync.fetched
+            ? "Flota y averiados (FleetKaputStatus) sincronizados"
+            : "Flota sincronizada desde la nube");
+        }
         return true;
       } catch (_) {
+        const kaputSync = await syncKaputPlatesFromSmartBcn();
+        if (kaputSync.fetched) {
+          saveLocalCache();
+          renderAllViews();
+        }
         updateSyncBadgeUI(false, "Sin red / Caché local");
-        if (showFeedback) pushToast("Sin conexión a nube; usando caché local", "error");
+        if (showFeedback) pushToast("Sincronizado en caché local", "info");
         return false;
       }
     }
@@ -1671,7 +1690,7 @@
           plate: item.plate,
           model: item.model,
           division: item.division,
-          status: item.status
+          status: item.status || "Operativo"
         };
       });
 
@@ -1685,7 +1704,7 @@
           throw new Error(`HTTP ${resp.status}`);
         }
         updateSyncBadgeUI(true, "Nube sincronizada");
-        recordSyncTimestamp("Publicado en nube");
+        recordSyncTimestamp("Publicado");
         return true;
       } catch (_) {
         updateSyncBadgeUI(false, "Error envío nube");
@@ -1723,13 +1742,13 @@
                 renderAllViews();
               }
             } else if (msg.path && msg.path !== "/") {
-              pullFleetFromCloud(false);
+              pullFleetFromCloud(false, "Tiempo real");
             }
           } catch (_) {}
         });
 
         es.addEventListener("patch", function() {
-          pullFleetFromCloud(false);
+          pullFleetFromCloud(false, "Tiempo real");
         });
 
         es.onerror = function() {
@@ -1748,7 +1767,7 @@
       const raw = document.getElementById("firebaseDbUrlInput").value;
       const clean = sanitizeFirebaseBaseUrl(raw);
       if (!clean) {
-        pushToast("Introduce una URL válida (https://...firebaseio.com)", "error");
+        pushToast("Introduce una URL válida de Firebase Realtime Database", "error");
         return;
       }
       cloudDbBaseUrl = clean;
@@ -1758,7 +1777,7 @@
       } catch (_) {}
 
       connectRealtimeCloudListener();
-      const pulled = await pullFleetFromCloud(false);
+      const pulled = await pullFleetFromCloud(false, "Conectado");
       if (pulled && fleetRecords.length > 0) {
         await pushFleetToCloud();
       }
@@ -1776,18 +1795,34 @@
       try {
         localStorage.setItem(CLOUD_URL_STORAGE_KEY, clean);
       } catch (_) {}
-      await pullFleetFromCloud(true);
+      await pullFleetFromCloud(true, "Prueba OK");
+    }
+
+    async function runFourHourCycleSync(showFeedback, isAutomatic) {
+      const tag = isAutomatic ? "Auto 4h" : "Manual";
+      if (buildFleetEndpointUrl(cloudDbBaseUrl)) {
+        await pullFleetFromCloud(!!showFeedback, tag);
+      } else {
+        loadLocalCache();
+        await syncKaputPlatesFromSmartBcn();
+        saveLocalCache();
+        renderAllViews();
+        recordSyncTimestamp(tag);
+        if (showFeedback) pushToast("Sincronización manual completada", "info");
+      }
+    }
+
+    function startFourHourScheduler() {
+      if (fourHourTimerId) {
+        clearInterval(fourHourTimerId);
+      }
+      fourHourTimerId = setInterval(function() {
+        runFourHourCycleSync(false, true);
+      }, AUTO_SYNC_INTERVAL_MS);
     }
 
     async function triggerInstantUpdate() {
-      loadLocalCache();
-      renderAllViews();
-      if (buildFleetEndpointUrl(cloudDbBaseUrl)) {
-        await pullFleetFromCloud(true);
-      } else {
-        recordSyncTimestamp("Actualización instantánea");
-        pushToast("Actualización instantánea completada");
-      }
+      await runFourHourCycleSync(true, false);
     }
 
     /* =====================================================================
@@ -2021,7 +2056,7 @@
 
         const rawModel = cols[modelIdx] !== undefined ? cols[modelIdx] : (cols[1] || "VEHÍCULO");
         const rawDiv = cols[divIdx] !== undefined ? cols[divIdx] : (cols[2] || "FCC");
-        const rawStatus = cols[statusIdx] !== undefined ? cols[statusIdx] : (cols[3] || "Operativo");
+        const rawStatus = cols[statusIdx] !== undefined ? cols[statusIdx] : (cols[3] || "");
 
         uniqueMap.set(plate, {
           plate: plate,
@@ -2035,26 +2070,16 @@
     }
 
     /* =====================================================================
-       VISUALS & SAURER M-72515 EMBLEM / BACKGROUND
+       TITLE EMBLEM IMAGE (1795640388471.jpg ONLY IN TITLE)
        ===================================================================== */
-    function initSaurerVisuals() {
+    function initTitleEmblem() {
       const emblem = document.getElementById("saurerFrontEmblemImg");
-      const emblemFallback = buildSaurerEmblemSvg();
       if (emblem) {
+        emblem.src = "1795640388471.jpg";
         emblem.onerror = function() {
           this.onerror = null;
-          this.src = "1000054422.jpg";
-          this.onerror = function() {
-            this.onerror = null;
-            this.src = emblemFallback;
-          };
+          this.style.display = "none";
         };
-      }
-
-      const bg = document.getElementById("saurerBgPhoto");
-      if (bg) {
-        const bgFallback = buildSaurerBgSvg();
-        bg.style.backgroundImage = `url("1000054422.jpg"), url("1000054425.jpg"), url("${bgFallback}")`;
       }
     }
 
@@ -2130,7 +2155,8 @@
         const matchPlate = r.plate.toLowerCase().indexOf(q) !== -1 || (qPlate && r.plate.toLowerCase().indexOf(qPlate) !== -1);
         const matchModel = r.model.toLowerCase().indexOf(q) !== -1;
         const matchDivision = r.division.toLowerCase().indexOf(q) !== -1;
-        return matchPlate || matchModel || matchDivision;
+        const matchStatus = r.status.toLowerCase().indexOf(q) !== -1;
+        return matchPlate || matchModel || matchDivision || matchStatus;
       });
     }
 
@@ -2145,7 +2171,7 @@
       }
 
       menu.innerHTML = matches.map(function(r) {
-        const stCls = r.status === "FleetKaputStatus" ? "st-kaput" : (r.status === "En Taller" ? "st-taller" : "st-operativo");
+        const stCls = r.status === "Averiado" ? "st-kaput" : (r.status === "En Taller" ? "st-taller" : "st-operativo");
         const isSel = normalizePlate(searchQueryText) === r.plate;
         return `
           <button type="button" class="suggest-item ${isSel ? "active" : ""}" onclick="selectSearchPlate('${r.plate}')">
@@ -2191,13 +2217,13 @@
       }
 
       track.innerHTML = matches.map(function(r) {
-        const stCls = r.status === "FleetKaputStatus" ? "st-kaput" : (r.status === "En Taller" ? "st-taller" : "st-operativo");
+        const stCls = r.status === "Averiado" ? "st-kaput" : (r.status === "En Taller" ? "st-taller" : "st-operativo");
         const isSel = normalizePlate(searchQueryText) === r.plate;
         return `
           <button type="button" class="carousel-card ${isSel ? "selected" : ""}" onclick="selectSearchPlate('${r.plate}')">
             <div style="display:flex; align-items:center; justify-content:space-between; gap:6px;">
               <span class="suggest-plate">${r.plate}</span>
-              <span class="status-badge ${stCls}" style="padding:2px 6px; font-size:0.64rem;">${r.status === "FleetKaputStatus" ? "Kaput" : r.status}</span>
+              <span class="status-badge ${stCls}" style="padding:2px 6px; font-size:0.64rem;">${r.status}</span>
             </div>
             <div style="font-size:0.74rem; font-weight:800; color:#f8fafc; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${r.model}</div>
             <div style="font-size:0.68rem; color:#93c5fd; font-weight:700;">${r.division}</div>
@@ -2257,7 +2283,7 @@
       let kaput = 0;
       let workshop = 0;
       fleetRecords.forEach(function(r) {
-        if (r.status === "FleetKaputStatus") kaput++;
+        if (r.status === "Averiado") kaput++;
         else if (r.status === "En Taller") workshop++;
       });
       document.getElementById("kaputCountBadge").textContent = String(kaput);
@@ -2271,7 +2297,7 @@
       }
       const rec = fleetRecords.find(function(r) { return r.plate === plateCode; });
       if (!rec) return;
-      rec.status = normalizeStatus(nextStatus);
+      rec.status = normalizeStatus(nextStatus) || "Operativo";
       saveLocalCache();
       recordSyncTimestamp("Estado actualizado");
       renderAllViews();
@@ -2317,13 +2343,13 @@
       }
 
       tbody.innerHTML = rows.map(function(r) {
-        const stCls = r.status === "FleetKaputStatus" ? "st-kaput" : (r.status === "En Taller" ? "st-taller" : "st-operativo");
+        const stCls = r.status === "Averiado" ? "st-kaput" : (r.status === "En Taller" ? "st-taller" : "st-operativo");
         const statusCell = isAdminMode
           ? `<div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
                <span class="status-badge ${stCls}">${r.status}</span>
                <select class="status-select-admin" aria-label="Estado ${r.plate}" onchange="updateVehicleStatusInline('${r.plate}', this.value)">
                  <option value="Operativo" ${r.status === "Operativo" ? "selected" : ""}>Operativo</option>
-                 <option value="FleetKaputStatus" ${r.status === "FleetKaputStatus" ? "selected" : ""}>FleetKaputStatus</option>
+                 <option value="Averiado" ${r.status === "Averiado" ? "selected" : ""}>Averiado</option>
                  <option value="En Taller" ${r.status === "En Taller" ? "selected" : ""}>En Taller</option>
                </select>
              </div>`
@@ -2345,11 +2371,11 @@
       }).join("");
 
       cardsWrap.innerHTML = rows.map(function(r) {
-        const stCls = r.status === "FleetKaputStatus" ? "st-kaput" : (r.status === "En Taller" ? "st-taller" : "st-operativo");
+        const stCls = r.status === "Averiado" ? "st-kaput" : (r.status === "En Taller" ? "st-taller" : "st-operativo");
         const mobileAdminSel = isAdminMode
           ? `<select class="status-select-admin" aria-label="Estado ${r.plate}" onchange="updateVehicleStatusInline('${r.plate}', this.value)">
                <option value="Operativo" ${r.status === "Operativo" ? "selected" : ""}>Operativo</option>
-               <option value="FleetKaputStatus" ${r.status === "FleetKaputStatus" ? "selected" : ""}>FleetKaputStatus</option>
+               <option value="Averiado" ${r.status === "Averiado" ? "selected" : ""}>Averiado</option>
                <option value="En Taller" ${r.status === "En Taller" ? "selected" : ""}>En Taller</option>
              </select>`
           : "";
@@ -2404,7 +2430,7 @@
       if (stagedImportList.length > 0) {
         previewBox.classList.remove("hidden");
         previewBox.textContent = stagedImportList.slice(0, 12).map(function(row) {
-          return `${row.plate} | ${row.model} | ${row.division} | ${row.status}`;
+          return `${row.plate} | ${row.model} | ${row.division} | ${row.status || "(mantener estado)"}`;
         }).join("\n") + (stagedImportList.length > 12 ? `\n... (+${stagedImportList.length - 12} más)` : "");
       } else {
         previewBox.classList.add("hidden");
@@ -2454,14 +2480,17 @@
     async function applyImportedRows() {
       if (!isAdminMode || stagedImportList.length === 0) return;
       const mode = document.getElementById("importModeSelect").value;
+      const prevMap = new Map();
+      fleetRecords.forEach(function(r) { prevMap.set(r.plate, r); });
 
       if (mode === "replace") {
         fleetRecords = stagedImportList.map(function(item) {
+          const prev = prevMap.get(item.plate) || {};
           return {
             plate: item.plate,
             model: item.model,
             division: item.division,
-            status: item.status
+            status: item.status || prev.status || "Operativo"
           };
         });
       } else {
@@ -2480,7 +2509,7 @@
       }
 
       saveLocalCache();
-      recordSyncTimestamp("Importación ordenada");
+      recordSyncTimestamp("Importación");
       closeModal("importModal");
       renderAllViews();
       pushToast(`Importados y ordenados ${stagedImportList.length} vehículos`);
@@ -2506,7 +2535,7 @@
       const plate = normalizePlate(document.getElementById("formPlateInput").value);
       const division = normalizeDivision(document.getElementById("formDivisionInput").value);
       const model = String(document.getElementById("formModelInput").value || "").trim().toUpperCase();
-      const status = normalizeStatus(document.getElementById("formStatusSelect").value);
+      const status = normalizeStatus(document.getElementById("formStatusSelect").value) || "Operativo";
 
       if (!plate || !model) return;
 
@@ -2516,7 +2545,7 @@
       else fleetRecords.push(entry);
 
       saveLocalCache();
-      recordSyncTimestamp("Vehículo guardado");
+      recordSyncTimestamp("Vehículo");
       closeModal("vehicleFormModal");
       renderAllViews();
       pushToast(`${plate} guardado y ordenado`);
@@ -2530,7 +2559,7 @@
       }
       fleetRecords = sortFleetInPlace(FLEET_SEED.map(function(r) { return Object.assign({}, r); }));
       saveLocalCache();
-      recordSyncTimestamp("Base restaurada");
+      recordSyncTimestamp("Restaurada");
       renderAllViews();
       pushToast("Base restaurada y ordenada");
       await pushFleetToCloud();
@@ -2543,7 +2572,7 @@
       }
       fleetRecords = [];
       saveLocalCache();
-      recordSyncTimestamp("Base vaciada");
+      recordSyncTimestamp("Vaciada");
       renderAllViews();
       pushToast("Base vaciada", "info");
       await pushFleetToCloud();
@@ -2555,16 +2584,16 @@
     function openShareModal() {
       const url = (window.location && window.location.href && window.location.href !== "about:blank")
         ? window.location.href
-        : "FleetTrackDrivers.html";
+        : "https://pxocolatero-prog.github.io/FleettrackDrivers/";
       const total = fleetRecords.length;
       const op = fleetRecords.filter(function(r) { return r.status === "Operativo"; }).length;
-      const kaput = fleetRecords.filter(function(r) { return r.status === "FleetKaputStatus"; });
+      const kaput = fleetRecords.filter(function(r) { return r.status === "Averiado"; });
       const workshop = fleetRecords.filter(function(r) { return r.status === "En Taller"; });
 
       const summary = [
         "FleetTrackDrivers • Control de Flota (FFZF)",
         `Total: ${total} | Operativos: ${op}`,
-        `FleetKaputStatus (${kaput.length}): ${kaput.map(function(x) { return x.plate; }).join(", ") || "Ninguno"}`,
+        `Averiados (${kaput.length}): ${kaput.map(function(x) { return x.plate; }).join(", ") || "Ninguno"}`,
         `En Taller (${workshop.length}): ${workshop.map(function(x) { return x.plate; }).join(", ") || "Ninguno"}`,
         `Enlace: ${url}`
       ].join("\n");
@@ -2627,13 +2656,17 @@
     });
 
     (function bootFleetTrackDrivers() {
-      initSaurerVisuals();
+      initTitleEmblem();
       loadLocalCache();
+      saveLocalCache();
 
       try {
         const savedUrl = localStorage.getItem(CLOUD_URL_STORAGE_KEY);
         if (savedUrl) {
-          cloudDbBaseUrl = sanitizeFirebaseBaseUrl(savedUrl);
+          cloudDbBaseUrl = sanitizeFirebaseBaseUrl(savedUrl) || DEFAULT_FIREBASE_DB_URL;
+        } else {
+          cloudDbBaseUrl = DEFAULT_FIREBASE_DB_URL;
+          localStorage.setItem(CLOUD_URL_STORAGE_KEY, cloudDbBaseUrl);
         }
         const savedClock = localStorage.getItem(LAST_SYNC_STORAGE_KEY);
         if (savedClock) {
@@ -2642,19 +2675,20 @@
           recordSyncTimestamp("Listo");
         }
       } catch (_) {
+        cloudDbBaseUrl = DEFAULT_FIREBASE_DB_URL;
         recordSyncTimestamp("Listo");
       }
 
       updateSyncBadgeUI(false, cloudDbBaseUrl ? "Conectando nube..." : "Caché local");
       applyAdminModeUI();
       renderAllViews();
+      startFourHourScheduler();
 
       if (cloudDbBaseUrl) {
         connectRealtimeCloudListener();
-        pullFleetFromCloud(false);
+        pullFleetFromCloud(false, "Inicio");
       }
     })();
   </script>
 </body>
 </html>
-```
