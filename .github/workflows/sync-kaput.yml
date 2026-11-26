@@ -1,0 +1,87 @@
+name: Sync Kaput Every 4 Hours
+
+on:
+  schedule:
+    - cron: "0 */4 * * *"
+  workflow_dispatch:
+
+jobs:
+  sync-kaput:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Update averiados in Firebase Realtime Database
+        env:
+          FIREBASE_DB_URL: ${{ vars.FIREBASE_DB_URL }}
+          FIREBASE_DB_SECRET: ${{ secrets.FIREBASE_DB_SECRET }}
+        run: |
+          node -e '
+          (async () => {
+            const baseUrl = (process.env.FIREBASE_DB_URL || "https://fleettrackdrivers-default-rtdb.europe-west1.firebasedatabase.app").replace(/\/+$/, "");
+            const secret = (process.env.FIREBASE_DB_SECRET || "").trim();
+            const authQuery = secret ? `?auth=${encodeURIComponent(secret)}` : "";
+            const endpoint = `${baseUrl}/fleetTrackDrivers/vehicles.json${authQuery}`;
+
+            const targetUrl = "https://smartbcn.fcc.es/SBCNC/FleetStatus/?nomesAvariats=true&centre=FFZF";
+            let kaputSet = new Set();
+
+            try {
+              const res = await fetch(targetUrl);
+              console.log("Estado HTTP URL FCC:", res.status);
+              if (res.ok) {
+                const html = await res.text();
+                const matches = html.toUpperCase().match(/\b\d{4}[A-Z]{3}\b/g) || [];
+                kaputSet = new Set(matches.map(s => s.replace(/[^A-Z0-9]/g, "")));
+              }
+            } catch (err) {
+              console.log("Aviso al leer URL externa:", err.message);
+            }
+
+            const dbRes = await fetch(endpoint);
+            if (!dbRes.ok) {
+              throw new Error(`Error leyendo Firebase: HTTP ${dbRes.status}`);
+            }
+            const currentData = await dbRes.json();
+            if (!currentData || typeof currentData !== "object") {
+              console.log("No hay vehículos en /fleetTrackDrivers/vehicles");
+              return;
+            }
+
+            const entries = Array.isArray(currentData)
+              ? currentData.filter(Boolean).map(v => [String(v.plate || "").toUpperCase(), v])
+              : Object.entries(currentData);
+
+            let changed = 0;
+            for (const [key, item] of entries) {
+              if (!item || typeof item !== "object") continue;
+              const plate = String(item.plate || key || "").trim().toUpperCase().replace(/[^A-Z0-9]/g, "");
+              if (!plate) continue;
+
+              const shouldBeKaput = kaputSet.has(plate);
+              const nextStatus = shouldBeKaput
+                ? "Averiado"
+                : (item.status === "Averiado" ? "Operativo" : (item.status || "Operativo"));
+
+              if (item.status !== nextStatus) {
+                item.status = nextStatus;
+                changed++;
+              }
+            }
+
+            console.log(`Matrículas detectadas en fuente: ${kaputSet.size} | Cambios aplicados: ${changed}`);
+
+            if (changed > 0) {
+              const putRes = await fetch(endpoint, {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(currentData)
+              });
+              if (!putRes.ok) {
+                throw new Error(`Error escribiendo en Firebase: HTTP ${putRes.status}`);
+              }
+              console.log("Firebase actualizado correctamente.");
+            }
+          })();
+          '
